@@ -9,20 +9,48 @@ import { integralCF } from "@/styles/fonts";
 import { FaArrowRight } from "react-icons/fa6";
 import { MdOutlineLocalOffer } from "react-icons/md";
 import { TbBasketExclamation } from "react-icons/tb";
-import React from "react";
+import { Award } from "lucide-react";
+import React, { useState } from "react";
 import { RootState } from "@/lib/store";
 import { useAppSelector } from "@/lib/hooks/redux";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
   const { cart, totalPrice, adjustedTotalPrice } = useAppSelector(
     (state: RootState) => state.carts
   );
+  const { isAuthenticated, user } = useAppSelector((state: RootState) => state.auth);
+  const router = useRouter();
+  const [pointsToUse, setPointsToUse] = useState(0);
+  const [promoCode, setPromoCode] = useState("");
+
+  // Show cart only if user is authenticated and has items
+  const showCart = isAuthenticated && cart && cart.items.length > 0;
+  
+  // Calculate points discount (100 points = $5)
+  const pointsDiscount = Math.floor(pointsToUse / 100) * 5;
+  const finalTotal = Math.max(0, adjustedTotalPrice - pointsDiscount);
+  const maxPointsUsable = Math.min(user?.loyaltyPoints || 0, Math.floor(adjustedTotalPrice / 5) * 100);
+
+  const handleCheckout = () => {
+    // Store checkout data in localStorage for checkout page
+    const checkoutData = {
+      subtotal: totalPrice,
+      discount: totalPrice - adjustedTotalPrice,
+      pointsUsed: pointsToUse,
+      pointsDiscount,
+      total: finalTotal,
+      promoCode
+    };
+    localStorage.setItem('checkoutData', JSON.stringify(checkoutData));
+    router.push('/checkout');
+  };
 
   return (
     <main className="pb-20">
       <div className="max-w-frame mx-auto px-4 xl:px-0">
-        {cart && cart.items.length > 0 ? (
+        {showCart ? (
           <>
             <BreadcrumbCart />
             <h2
@@ -65,6 +93,16 @@ export default function CartPage() {
                       -${Math.round(totalPrice - adjustedTotalPrice)}
                     </span>
                   </div>
+                  {pointsDiscount > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="md:text-xl text-black/60">
+                        Points Discount ({pointsToUse} pts)
+                      </span>
+                      <span className="md:text-xl font-bold text-green-600">
+                        -${pointsDiscount}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span className="md:text-xl text-black/60">
                       Delivery Fee
@@ -75,10 +113,50 @@ export default function CartPage() {
                   <div className="flex items-center justify-between">
                     <span className="md:text-xl text-black">Total</span>
                     <span className="text-xl md:text-2xl font-bold">
-                      ${Math.round(adjustedTotalPrice)}
+                      ${finalTotal}
                     </span>
                   </div>
                 </div>
+                {/* Loyalty Points Section - Show even if user has 0 points */}
+                {user && (
+                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <div className="flex items-center mb-3">
+                      <Award className="w-5 h-5 text-yellow-600 mr-2" />
+                      <span className="font-medium text-yellow-800">
+                        Loyalty Points
+                      </span>
+                    </div>
+                    <p className="text-sm text-yellow-700 mb-3">
+                      You have {user.loyaltyPoints || 0} points available (100 points = $5)
+                    </p>
+                    {user.loyaltyPoints > 0 ? (
+                      <div className="flex space-x-3">
+                        <input
+                          type="number"
+                          min="0"
+                          max={maxPointsUsable}
+                          step="100"
+                          value={pointsToUse}
+                          onChange={(e) => setPointsToUse(Math.min(maxPointsUsable, parseInt(e.target.value) || 0))}
+                          className="flex-1 px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                          placeholder="Points to use"
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => setPointsToUse(maxPointsUsable)}
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md"
+                        >
+                          Use Max
+                        </Button>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-yellow-600 italic">
+                        Complete purchases to earn loyalty points!
+                      </p>
+                    )}
+                  </div>
+                )}
+                
                 <div className="flex space-x-3">
                   <InputGroup className="bg-[#F0F0F0]">
                     <InputGroup.Text>
@@ -87,6 +165,8 @@ export default function CartPage() {
                     <InputGroup.Input
                       type="text"
                       name="code"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
                       placeholder="Add promo code"
                       className="bg-transparent placeholder:text-black/40"
                     />
@@ -100,6 +180,7 @@ export default function CartPage() {
                 </div>
                 <Button
                   type="button"
+                  onClick={handleCheckout}
                   className="text-sm md:text-base font-medium bg-black rounded-full w-full py-4 h-[54px] md:h-[60px] group"
                 >
                   Go to Checkout{" "}
@@ -111,9 +192,16 @@ export default function CartPage() {
         ) : (
           <div className="flex items-center flex-col text-gray-300 mt-32">
             <TbBasketExclamation strokeWidth={1} className="text-6xl" />
-            <span className="block mb-4">Your shopping cart is empty.</span>
+            <span className="block mb-4">
+              {!isAuthenticated 
+                ? "Please login to view your cart." 
+                : "Your shopping cart is empty."
+              }
+            </span>
             <Button className="rounded-full w-24" asChild>
-              <Link href="/shop">Shop</Link>
+              <Link href={!isAuthenticated ? "/auth/login" : "/shop"}>
+                {!isAuthenticated ? "Login" : "Shop"}
+              </Link>
             </Button>
           </div>
         )}

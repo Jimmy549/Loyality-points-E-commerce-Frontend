@@ -1,3 +1,5 @@
+"use client";
+
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -6,8 +8,27 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import * as motion from "framer-motion/client";
+import { useHeroContent } from "@/lib/hooks/useWebsiteContent";
 
 const Header = () => {
+  const { heroData, loading } = useHeroContent();
+
+  if (loading) {
+    return (
+      <header className="bg-[#F2F0F1] pt-10 md:pt-24 overflow-hidden">
+        <div className="md:max-w-frame mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+          <section className="max-w-frame px-4">
+            <div className="animate-pulse">
+              <div className="h-16 bg-gray-300 rounded mb-5"></div>
+              <div className="h-20 bg-gray-300 rounded mb-6"></div>
+              <div className="h-12 bg-gray-300 rounded w-52"></div>
+            </div>
+          </section>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header className="bg-[#F2F0F1] pt-10 md:pt-24 overflow-hidden">
       <div className="md:max-w-frame mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
@@ -22,7 +43,7 @@ const Header = () => {
               "text-4xl lg:text-[64px] lg:leading-[64px] mb-5 lg:mb-8",
             ])}
           >
-            FIND CLOTHES THAT MATCHES YOUR STYLE
+            {heroData.title || "FIND CLOTHES THAT MATCHES YOUR STYLE"}
           </motion.h2>
           <motion.p
             initial={{ y: "100px", opacity: 0 }}
@@ -31,9 +52,7 @@ const Header = () => {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="text-black/60 text-sm lg:text-base mb-6 lg:mb-8 max-w-[545px]"
           >
-            Browse through our diverse range of meticulously crafted garments,
-            designed to bring out your individuality and cater to your sense of
-            style.
+            {heroData.subtitle || "Browse through our diverse range of meticulously crafted garments, designed to bring out your individuality and cater to your sense of style."}
           </motion.p>
           <motion.div
             initial={{ y: "100px", opacity: 0 }}

@@ -1,7 +1,42 @@
 import { compareArrays } from "@/lib/utils";
 import { Discount } from "@/types/product.types";
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { cartService, Cart as BackendCart, AddToCartData } from "../../services/cart.service";
+import { logout } from '../auth/authSlice';
+
+// Async thunks for API calls
+export const fetchCart = createAsyncThunk(
+  'carts/fetchCart',
+  async () => {
+    const response = await cartService.getCart();
+    return response;
+  }
+);
+
+export const addToCartAsync = createAsyncThunk(
+  'carts/addToCart',
+  async (data: AddToCartData) => {
+    const response = await cartService.addToCart(data);
+    return response;
+  }
+);
+
+export const updateCartItemAsync = createAsyncThunk(
+  'carts/updateCartItem',
+  async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
+    const response = await cartService.updateCartItem(itemId, quantity);
+    return response;
+  }
+);
+
+export const removeFromCartAsync = createAsyncThunk(
+  'carts/removeFromCart',
+  async (itemId: string) => {
+    const response = await cartService.removeFromCart(itemId);
+    return response;
+  }
+);
 
 const calcAdjustedTotalPrice = (
   totalPrice: number,
@@ -40,22 +75,27 @@ export type Cart = {
 // Define a type for the slice state
 interface CartsState {
   cart: Cart | null;
+  backendCart: BackendCart | null;
   totalPrice: number;
   adjustedTotalPrice: number;
   action: "update" | "add" | "delete" | null;
+  loading: boolean;
+  error: string | null;
 }
 
 // Define the initial state using that type
 const initialState: CartsState = {
   cart: null,
+  backendCart: null,
   totalPrice: 0,
   adjustedTotalPrice: 0,
   action: null,
+  loading: false,
+  error: null,
 };
 
 export const cartsSlice = createSlice({
   name: "carts",
-  // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
     addToCart: (state, action: PayloadAction<CartItem>) => {
@@ -194,9 +234,56 @@ export const cartsSlice = createSlice({
           isItemInCart.quantity
         );
     },
+    clearCart: (state) => {
+      state.cart = null;
+      state.backendCart = null;
+      state.totalPrice = 0;
+      state.adjustedTotalPrice = 0;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Logout listener - clear cart
+      .addCase(logout, (state) => {
+        return initialState;
+      })
+      // Fetch cart
+      .addCase(fetchCart.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCart.fulfilled, (state, action) => {
+        state.loading = false;
+        state.backendCart = action.payload;
+      })
+      .addCase(fetchCart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch cart';
+      })
+      // Add to cart
+      .addCase(addToCartAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addToCartAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.backendCart = action.payload;
+      })
+      .addCase(addToCartAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to add to cart';
+      })
+      // Update cart item
+      .addCase(updateCartItemAsync.fulfilled, (state, action) => {
+        state.backendCart = action.payload;
+      })
+      // Remove from cart
+      .addCase(removeFromCartAsync.fulfilled, (state, action) => {
+        state.backendCart = action.payload;
+      });
   },
 });
 
-export const { addToCart, removeCartItem, remove } = cartsSlice.actions;
+export const { addToCart, removeCartItem, remove, clearCart } = cartsSlice.actions;
 
 export default cartsSlice.reducer;

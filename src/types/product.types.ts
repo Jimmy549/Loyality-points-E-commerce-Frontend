@@ -4,7 +4,8 @@ export type Discount = {
 };
 
 export type Product = {
-  id: number;
+  _id?: string;  // MongoDB ObjectId from backend
+  id?: number;   // Legacy numeric ID for mock data
   title: string;
   srcUrl: string;
   gallery?: string[];

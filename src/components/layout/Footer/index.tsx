@@ -25,11 +25,7 @@ const socialsData: SocialNetworks[] = [
     icon: <FaInstagram />,
     url: "https://instagram.com",
   },
-  {
-    id: 4,
-    icon: <FaGithub />,
-    url: "https://github.com/mohammadoftadeh",
-  },
+ 
 ];
 
 const paymentBadgesData: PaymentBadge[] = [
@@ -82,13 +78,12 @@ const Footer = () => {
               </p>
               <div className="flex items-center">
                 {socialsData.map((social) => (
-                  <Link
-                    href={social.url}
+                  <div
                     key={social.id}
-                    className="bg-white hover:bg-black hover:text-white transition-all mr-3 w-7 h-7 rounded-full border border-black/20 flex items-center justify-center p-1.5"
+                    className="bg-white hover:bg-black hover:text-white transition-all mr-3 w-7 h-7 rounded-full border border-black/20 flex items-center justify-center p-1.5 cursor-pointer"
                   >
                     {social.icon}
-                  </Link>
+                  </div>
                 ))}
               </div>
             </div>
@@ -104,20 +99,9 @@ const Footer = () => {
           <div className="flex flex-col sm:flex-row justify-center sm:justify-between items-center mb-2">
             <p className="text-sm text-center sm:text-left text-black/60 mb-4 sm:mb-0 sm:mr-1">
               Shop.co © Made by{" "}
-              <Link
-                href="https://github.com/mohammadoftadeh"
-                className="text-black font-medium"
-              >
-                Mohammad Oftadeh
-              </Link>
-              {", "}
-              Designed by{" "}
-              <Link
-                href="https://www.figma.com/@hamzauix"
-                className="text-black font-medium"
-              >
-                Hamza Naeem
-              </Link>
+              <span className="text-black font-medium">
+                Jameel Jimmy
+              </span>
             </p>
             <div className="flex items-center">
               {paymentBadgesData.map((badge, _, arr) => (
@@ -132,9 +116,9 @@ const Footer = () => {
                     priority
                     src={badge.srcUrl}
                     width={33}
-                    height={100}
-                    alt="user"
-                    className="max-h-[15px]"
+                    height={15}
+                    alt="payment method"
+                    className="max-h-[15px] max-w-[33px] object-contain"
                   />
                 </span>
               ))}

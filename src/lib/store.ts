@@ -3,17 +3,23 @@ import { persistReducer, persistStore } from "redux-persist";
 import storage from "@/components/storage";
 import productsReducer from "./features/products/productsSlice";
 import cartsReducer from "./features/carts/cartsSlice";
+import authReducer from "./features/auth/authSlice";
+import cartReducer from "./features/cart/cartSlice";
+import notificationReducer from "./features/notifications/notificationSlice";
 
 const persistConfig = {
   key: "root",
   storage,
   version: 1,
-  whitelist: ["carts"],
+  whitelist: ["carts", "auth", "notifications"],
 };
 
 const rootReducer = combineReducers({
   products: productsReducer,
   carts: cartsReducer,
+  auth: authReducer,
+  cart: cartReducer,
+  notifications: notificationReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -24,7 +30,9 @@ export const makeStore = () => {
     devTools: process.env.NODE_ENV !== "production",
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
-        serializableCheck: false,
+        serializableCheck: {
+          ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        },
       }),
   });
 
@@ -32,12 +40,8 @@ export const makeStore = () => {
   return { store, persistor };
 };
 
-const store = makeStore().store;
-
-// Infer the type of the store
-export type AppStore = typeof store;
+// Infer the type of makeStore
+export type AppStore = ReturnType<typeof makeStore>;
 // Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
-
-export { store };
+export type RootState = ReturnType<ReturnType<typeof makeStore>['store']['getState']>;
+export type AppDispatch = ReturnType<typeof makeStore>['store']['dispatch'];
