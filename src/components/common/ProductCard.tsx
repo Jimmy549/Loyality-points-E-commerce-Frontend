@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Rating from "../ui/Rating";
 import Image from "next/image";
