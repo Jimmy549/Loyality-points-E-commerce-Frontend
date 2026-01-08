@@ -1,6 +1,18 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { productsService, Product, ProductFilters } from "../../services/products.service";
+import { productsService } from "../../services/products.service";
+import { EnhancedProduct } from "@/types/enhanced-product.types";
+
+export interface ProductFilters {
+  page?: number;
+  limit?: number;
+  category?: string;
+  search?: string;
+  paymentType?: string;
+  sortBy?: string;
+}
+
+type Product = EnhancedProduct;
 
 export type Color = {
   name: string;
@@ -11,8 +23,12 @@ export type Color = {
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async (filters?: ProductFilters) => {
-    const response = await productsService.getProducts(filters);
-    return response;
+    const response = await productsService.getAllProducts(filters);
+    return {
+      products: response.products,
+      totalPages: Math.ceil(response.total / response.limit),
+      page: response.page
+    };
   }
 );
 
@@ -27,8 +43,8 @@ export const fetchProduct = createAsyncThunk(
 export const fetchFeaturedProducts = createAsyncThunk(
   'products/fetchFeaturedProducts',
   async () => {
-    const response = await productsService.getFeaturedProducts();
-    return response;
+    const response = await productsService.getAllProducts({ limit: 10 });
+    return response.products;
   }
 );
 
