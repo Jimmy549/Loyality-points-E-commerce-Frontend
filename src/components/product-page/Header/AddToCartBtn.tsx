@@ -15,7 +15,7 @@ const AddToCartBtn = ({ data }: { data: Product & { quantity: number } }) => {
 
   const handleAddToCart = async () => {
     try {
-      const productId = getBackendProductId(data.id);
+      const productId = getBackendProductId(data.id || 0);
       
       await dispatch(addToCartAsync({
         productId,
