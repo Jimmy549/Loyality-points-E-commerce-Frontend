@@ -1,4 +1,4 @@
-import { loyaltyApi } from '../api';
+import { loyaltyApi } from '../api/loyalty';
 
 export interface LoyaltyTransaction {
   id: string;
