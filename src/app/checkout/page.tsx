@@ -537,6 +537,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+          {paymentMethod !== 'points' && (
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4 flex items-center">
               <CreditCard className="w-5 h-5 mr-2" />
@@ -653,6 +654,7 @@ export default function CheckoutPage() {
               </div>
             </div>
           </div>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6 h-fit">
