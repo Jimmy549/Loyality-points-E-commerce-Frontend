@@ -17,14 +17,20 @@ const ProductCard = ({ data }: ProductCardProps) => {
       className="flex flex-col items-start aspect-auto"
     >
       <div className="bg-[#F0EEED] rounded-[13px] lg:rounded-[20px] w-full lg:max-w-[295px] aspect-square mb-2.5 xl:mb-4 overflow-hidden">
-        <Image
-          src={data.srcUrl || '/placeholder.png'}
-          width={295}
-          height={295}
-          className="rounded-md w-full h-full object-contain hover:scale-110 transition-all duration-500"
-          alt={data.title}
-          unoptimized
-        />
+        {data.srcUrl ? (
+          <Image
+            src={data.srcUrl}
+            width={295}
+            height={295}
+            className="rounded-md w-full h-full object-contain hover:scale-110 transition-all duration-500"
+            alt={data.title}
+            unoptimized
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400">
+            No Image
+          </div>
+        )}
       </div>
       <strong className="text-black xl:text-xl">{data.title}</strong>
       <div className="flex items-end mb-1 xl:mb-2">
