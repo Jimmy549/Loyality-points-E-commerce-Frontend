@@ -49,6 +49,7 @@ export default function CheckoutPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [orderId, setOrderId] = useState("");
   const [errorPopup, setErrorPopup] = useState({ isOpen: false, title: "", message: "" });
+  const [paymentMethod, setPaymentMethod] = useState<'money' | 'points' | 'hybrid'>('money');
   const [errors, setErrors] = useState({
     shipping: {} as any,
     payment: {} as any
@@ -217,7 +218,7 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     // Validate forms
     const isShippingValid = validateShippingAddress();
-    const isPaymentValid = validatePaymentDetails();
+    const isPaymentValid = paymentMethod === 'points' ? true : validatePaymentDetails();
     
     if (!isShippingValid || !isPaymentValid) {
       setErrorPopup({
