@@ -142,6 +142,12 @@ export default function ProductCard({ product, totalSales = 1269, onRefresh }: P
           </div>
 
           <div className="mt-4 flex gap-2">
+            <Link
+              href={`/admin/products/${product._id}`}
+              className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 text-center"
+            >
+              Edit
+            </Link>
             {!product.isOnSale ? (
               <button
                 onClick={() => setShowSaleModal(true)}

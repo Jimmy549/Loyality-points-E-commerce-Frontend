@@ -36,6 +36,7 @@ export default function ProductDetailsPage() {
     images: [],
   });
   const [tagInput, setTagInput] = useState("");
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   useEffect(() => {
     if (params.id && params.id !== "add") {
@@ -92,23 +93,41 @@ export default function ProductDetailsPage() {
     }));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setImageFiles(Array.from(e.target.files));
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const url =
-        params.id && params.id !== "add"
-          ? `${process.env.NEXT_PUBLIC_API_URL}/admin/products/${params.id}`
-          : `${process.env.NEXT_PUBLIC_API_URL}/admin/products`;
+      const formData = new FormData();
+      formData.append('title', productData.title);
+      formData.append('description', productData.description);
+      formData.append('category', productData.category);
+      formData.append('stock', productData.stock.toString());
+      formData.append('price', productData.price.toString());
+      formData.append('salePrice', productData.salePrice.toString());
+      formData.append('tags', JSON.stringify(productData.tags));
+      formData.append('loyaltyType', 'MONEY');
+      
+      imageFiles.forEach((file) => {
+        formData.append('images', file);
+      });
 
-      const method = params.id && params.id !== "add" ? "PUT" : "POST";
+      const url = params.id && params.id !== "add"
+        ? `${process.env.NEXT_PUBLIC_API_URL}/products/${params.id}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/products`;
+
+      const method = params.id && params.id !== "add" ? "PATCH" : "POST";
 
       const response = await fetch(url, {
         method,
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(productData),
+        body: formData,
       });
 
       if (response.ok) {
@@ -126,7 +145,7 @@ export default function ProductDetailsPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/products/${params.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/products/${params.id}`,
         {
           method: "DELETE",
           headers: {
@@ -350,34 +369,69 @@ export default function ProductDetailsPage() {
             <h3 className="text-sm font-medium text-gray-700 mb-4">
               Product Gallery
             </h3>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <label className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center block cursor-pointer hover:border-blue-500">
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
               <Upload size={40} className="mx-auto text-gray-400 mb-3" />
               <p className="text-sm text-gray-600 mb-1">
-                Drop your imager here, or browse
+                Drop your images here, or browse
               </p>
-              <p className="text-xs text-gray-500">Jpeg, png are allowed</p>
-            </div>
+              <p className="text-xs text-gray-500">Jpeg, png are allowed (Max 5 images)</p>
+            </label>
 
-            {/* Uploaded Images */}
-            <div className="space-y-3 mt-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-200 rounded"></div>
-                    <span className="text-sm text-gray-900">
-                      Product_thumbnail.png
-                    </span>
+            {/* Selected Images */}
+            {imageFiles.length > 0 && (
+              <div className="space-y-3 mt-4">
+                {imageFiles.map((file, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gray-200 rounded overflow-hidden">
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-sm text-gray-900">{file.name}</span>
+                    </div>
+                    <button
+                      onClick={() => setImageFiles(imageFiles.filter((_, idx) => idx !== i))}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <X size={16} />
+                    </button>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-32 h-1 bg-blue-600 rounded"></div>
-                    <button className="text-blue-600">✓</button>
-                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Existing Images */}
+            {productData.images.length > 0 && (
+              <div className="mt-4">
+                <p className="text-xs text-gray-500 mb-2">Current Images:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {productData.images.map((img, i) => (
+                    <div key={i} className="relative aspect-square">
+                      <Image
+                        src={img}
+                        alt={`Product ${i + 1}`}
+                        fill
+                        className="rounded object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
