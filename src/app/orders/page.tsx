@@ -175,7 +175,7 @@ export default function OrdersPage() {
                   {order.items.map((item, index) => {
                     // Handle different item structures from backend
                     const productName = item.title || item.product?.name || item.product?.title || 'Product';
-                    const itemPrice = item.price || (item.product?.price * item.quantity) || 0;
+                    const itemPrice = item.price || ((item.product?.price || 0) * item.quantity) || 0;
                     
                     return (
                       <div key={index} className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
