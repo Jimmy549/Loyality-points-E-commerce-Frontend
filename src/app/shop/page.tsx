@@ -63,7 +63,7 @@ export default function ShopPage() {
               <span className="font-bold text-black text-xl">Filters</span>
               <FiSliders className="text-2xl text-black/40" />
             </div>
-            <Filters onApply={handleApplyFilters} />
+            <Filters />
           </div>
           <div className="flex flex-col w-full space-y-5">
             <div className="flex flex-col lg:flex-row lg:justify-between">
