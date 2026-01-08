@@ -32,7 +32,7 @@ const Brands = () => {
 
   // Use dynamic brands if available, otherwise fallback to default
   const brandsToShow = brands.length > 0 
-    ? brands.map(brandId => defaultBrands.find(b => b.id === brandId)).filter(Boolean)
+    ? brands.map(brandId => defaultBrands.find(b => b.id === brandId)).filter((brand): brand is { id: string; srcUrl: string } => brand !== undefined)
     : defaultBrands;
 
   if (loading) {
