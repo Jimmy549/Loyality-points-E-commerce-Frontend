@@ -10,8 +10,8 @@ import BreadcrumbProduct from "@/components/product-page/BreadcrumbProduct";
 import Header from "@/components/product-page/Header";
 import Tabs from "@/components/product-page/Tabs";
 import { Product } from "@/types/product.types";
-import { useParams, useRouter } from "next/navigation";
-import { useMemo, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { useMemo } from "react";
 
 const data: Product[] = [
   ...newArrivalsData,
@@ -21,29 +21,29 @@ const data: Product[] = [
 
 export default function ProductPage() {
   const params = useParams();
-  const router = useRouter();
   const slug = params.slug as string[];
   
-  const productData = useMemo(() => 
-    data.find((product) => product.id === Number(slug?.[0])),
-    [slug]
-  );
+  const productData = useMemo(() => {
+    if (!slug || !slug[0]) return null;
+    return data.find((product) => product.id === Number(slug[0]));
+  }, [slug]);
 
-  useEffect(() => {
-    if (!productData?.title && slug) {
-      router.push('/');
-    }
-  }, [productData, slug, router]);
-
-  if (!productData?.title) {
-    return null;
+  if (!productData) {
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+          <a href="/" className="text-blue-600 hover:underline">Go back to home</a>
+        </div>
+      </main>
+    );
   }
 
   return (
     <main>
       <div className="max-w-frame mx-auto px-4 xl:px-0">
         <hr className="h-[1px] border-t-black/10 mb-5 sm:mb-6" />
-        <BreadcrumbProduct title={productData?.title ?? "product"} />
+        <BreadcrumbProduct title={productData.title} />
         <section className="mb-11">
           <Header data={productData} />
         </section>
