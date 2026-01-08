@@ -35,7 +35,14 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['framer-motion', 'react-icons'],
   },
-  turbopack: {},
+  turbopack: {
+    resolveAlias: {
+      'vercel-live': false,
+    },
+  },
+  devIndicators: {
+    buildActivityPosition: 'bottom-right',
+  },
 };
 
 export default nextConfig;
