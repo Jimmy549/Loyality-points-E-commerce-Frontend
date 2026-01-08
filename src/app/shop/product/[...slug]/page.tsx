@@ -1,23 +1,13 @@
 "use client";
 
-import {
-  newArrivalsData,
-  relatedProductData,
-  topSellingData,
-} from "@/app/(main)/page";
+import { allProductsData, relatedProductData } from "@/data/products";
 import ProductListSec from "@/components/common/ProductListSec";
 import BreadcrumbProduct from "@/components/product-page/BreadcrumbProduct";
 import Header from "@/components/product-page/Header";
 import Tabs from "@/components/product-page/Tabs";
 import { Product } from "@/types/product.types";
 import { useParams } from "next/navigation";
-import { useMemo, useEffect } from "react";
-
-const data: Product[] = [
-  ...newArrivalsData,
-  ...topSellingData,
-  ...relatedProductData,
-];
+import { useMemo } from "react";
 
 export default function ProductPage() {
   const params = useParams();
@@ -26,21 +16,15 @@ export default function ProductPage() {
   const productData = useMemo(() => {
     if (!slug || !slug[0]) return null;
     const id = Number(slug[0]);
-    const product = data.find((p) => p.id === id);
-    console.log('Product lookup:', { id, found: !!product, slug });
-    return product;
+    return allProductsData.find((p) => p.id === id);
   }, [slug]);
-
-  useEffect(() => {
-    console.log('ProductPage mounted', { slug, productData });
-  }, [slug, productData]);
 
   if (!productData) {
     return (
       <main className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
-          <p className="mb-4">Looking for product ID: {slug?.[0]}</p>
+          <p className="mb-4">Product ID: {slug?.[0]}</p>
           <a href="/" className="text-blue-600 hover:underline">Go back to home</a>
         </div>
       </main>
