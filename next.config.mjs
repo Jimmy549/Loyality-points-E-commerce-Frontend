@@ -29,7 +29,7 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   outputFileTracingRoot: __dirname,
-  reactStrictMode: false,
+  reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
   experimental: {
