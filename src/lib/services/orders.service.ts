@@ -124,7 +124,7 @@ export const ordersService = {
 
   async cancelOrder(id: string): Promise<Order | null> {
     try {
-      const response = await api.put(`/orders/${id}`, { status: 'cancelled' });
+      const response = await api.patch(`/orders/${id}/cancel`);
       return response.data;
     } catch (error) {
       console.error('Cancel order failed:', error);
