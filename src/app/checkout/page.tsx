@@ -168,12 +168,8 @@ export default function CheckoutPage() {
       const orderResult = await ordersService.createOrder(orderData);
       console.log('Order created:', orderResult);
       
-      // Update user's loyalty points
-      if (user && checkoutData) {
-        const pointsEarned = Math.floor(checkoutData.total);
-        const newPoints = user.loyaltyPoints - checkoutData.pointsUsed + pointsEarned;
-        dispatch(updateUser({ loyaltyPoints: newPoints }));
-      }
+      // Refresh user data from backend to get updated points
+      await dispatch(refreshUserData()).unwrap();
       
       // Clear checkout data and cart
       localStorage.removeItem('checkoutData');
