@@ -1,4 +1,4 @@
-import { notificationsApi } from '../api';
+import { notificationsApi } from '../api/notifications';
 
 export interface Notification {
   id: string;
