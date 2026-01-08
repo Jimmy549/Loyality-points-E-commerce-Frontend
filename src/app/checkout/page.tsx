@@ -10,6 +10,7 @@ import { integralCF } from "@/styles/fonts";
 import { cn } from "@/lib/utils";
 import { CreditCard, MapPin, CheckCircle } from "lucide-react";
 import { ordersService } from "@/lib/services/orders.service";
+import ErrorPopup from "@/components/ui/ErrorPopup";
 
 interface CheckoutData {
   subtotal: number;
@@ -47,6 +48,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [errorPopup, setErrorPopup] = useState({ isOpen: false, title: "", message: "" });
   const [errors, setErrors] = useState({
     shipping: {} as any,
     payment: {} as any
@@ -76,8 +78,24 @@ export default function CheckoutPage() {
     if (!paymentDetails.cardholderName.trim()) newErrors.cardholderName = 'Cardholder name is required';
     if (!paymentDetails.cardNumber.trim()) newErrors.cardNumber = 'Card number is required';
     else if (!/^\d{4}\s?\d{4}\s?\d{4}\s?\d{4}$/.test(paymentDetails.cardNumber.replace(/\s/g, ''))) newErrors.cardNumber = 'Card number is invalid';
-    if (!paymentDetails.expiryDate.trim()) newErrors.expiryDate = 'Expiry date is required';
-    else if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(paymentDetails.expiryDate)) newErrors.expiryDate = 'Expiry date must be MM/YY format';
+    
+    if (!paymentDetails.expiryDate.trim()) {
+      newErrors.expiryDate = 'Expiry date is required';
+    } else if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(paymentDetails.expiryDate)) {
+      newErrors.expiryDate = 'Expiry date must be MM/YY format';
+    } else {
+      const [month, year] = paymentDetails.expiryDate.split('/');
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear() % 100;
+      const currentMonth = currentDate.getMonth() + 1;
+      const expYear = parseInt(year);
+      const expMonth = parseInt(month);
+      
+      if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+        newErrors.expiryDate = 'Card has expired';
+      }
+    }
+    
     if (!paymentDetails.cvv.trim()) newErrors.cvv = 'CVV is required';
     else if (!/^\d{3,4}$/.test(paymentDetails.cvv)) newErrors.cvv = 'CVV must be 3-4 digits';
     
@@ -108,6 +126,75 @@ export default function CheckoutPage() {
     return v;
   };
 
+  const validateExpiryDateRealtime = (value: string) => {
+    if (!value) return '';
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(value)) return 'Invalid format (MM/YY)';
+    
+    const [month, year] = value.split('/');
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear() % 100;
+    const currentMonth = currentDate.getMonth() + 1;
+    const expYear = parseInt(year);
+    const expMonth = parseInt(month);
+    
+    if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+      return 'Card has expired';
+    }
+    return '';
+  };
+
+  const validateFieldRealtime = (field: string, value: string, type: 'shipping' | 'payment') => {
+    let error = '';
+    
+    if (type === 'shipping') {
+      switch(field) {
+        case 'fullName':
+          if (!value.trim()) error = 'Full name is required';
+          break;
+        case 'email':
+          if (!value.trim()) error = 'Email is required';
+          else if (!/\S+@\S+\.\S+/.test(value)) error = 'Email is invalid';
+          break;
+        case 'phone':
+          if (!value.trim()) error = 'Phone number is required';
+          else if (!/^[\+]?[1-9][\d]{0,15}$/.test(value.replace(/[\s\-\(\)]/g, ''))) error = 'Phone number is invalid';
+          break;
+        case 'street':
+          if (!value.trim()) error = 'Street address is required';
+          break;
+        case 'city':
+          if (!value.trim()) error = 'City is required';
+          break;
+        case 'state':
+          if (!value.trim()) error = 'State is required';
+          break;
+        case 'zipCode':
+          if (!value.trim()) error = 'ZIP code is required';
+          else if (!/^\d{5}(-\d{4})?$/.test(value)) error = 'ZIP code is invalid';
+          break;
+      }
+    } else {
+      switch(field) {
+        case 'cardholderName':
+          if (!value.trim()) error = 'Cardholder name is required';
+          break;
+        case 'cardNumber':
+          if (!value.trim()) error = 'Card number is required';
+          else if (!/^\d{4}\s?\d{4}\s?\d{4}\s?\d{4}$/.test(value.replace(/\s/g, ''))) error = 'Card number is invalid';
+          break;
+        case 'expiryDate':
+          error = validateExpiryDateRealtime(value);
+          break;
+        case 'cvv':
+          if (!value.trim()) error = 'CVV is required';
+          else if (!/^\d{3,4}$/.test(value)) error = 'CVV must be 3-4 digits';
+          break;
+      }
+    }
+    
+    return error;
+  };
+
   useEffect(() => {
     // Wait for auth initialization before checking authentication
     if (!initialized) {
@@ -133,7 +220,11 @@ export default function CheckoutPage() {
     const isPaymentValid = validatePaymentDetails();
     
     if (!isShippingValid || !isPaymentValid) {
-      alert('Please fix the errors in the form before proceeding.');
+      setErrorPopup({
+        isOpen: true,
+        title: "Validation Error",
+        message: "Please fix all errors in the form before proceeding with your order."
+      });
       return;
     }
     
@@ -183,16 +274,24 @@ export default function CheckoutPage() {
       const errorMessage = error.response?.data?.message || error.message || 'Order placement failed';
       console.error('Order placement failed:', errorMessage);
       
-      // Show user-friendly error message
+      let title = "Order Failed";
+      let message = "We couldn't process your order. Please try again.";
+      
       if (errorMessage.includes('Insufficient points')) {
-        alert('You don\'t have enough loyalty points for this purchase. Please reduce the points used or add more items to earn points.');
+        title = "Insufficient Points";
+        message = "You don't have enough loyalty points for this purchase. Please reduce the points used or add more items to earn points.";
       } else if (errorMessage.includes('Cart is empty')) {
-        alert('Your cart is empty. Please add items to your cart before checkout.');
+        title = "Empty Cart";
+        message = "Your cart is empty. Please add items to your cart before checkout.";
       } else if (errorMessage.includes('stock')) {
-        alert('Some items in your cart are out of stock. Please review your cart.');
-      } else {
-        alert('Order placement failed. Please try again or contact support if the problem persists.');
+        title = "Out of Stock";
+        message = "Some items in your cart are out of stock. Please review your cart.";
+      } else if (errorMessage.includes('network') || errorMessage.includes('Network')) {
+        title = "Connection Error";
+        message = "Unable to connect to the server. Please check your internet connection and try again.";
       }
+      
+      setErrorPopup({ isOpen: true, title, message });
     } finally {
       setLoading(false);
     }
@@ -204,6 +303,14 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Error Popup */}
+      <ErrorPopup
+        isOpen={errorPopup.isOpen}
+        title={errorPopup.title}
+        message={errorPopup.message}
+        onClose={() => setErrorPopup({ isOpen: false, title: "", message: "" })}
+      />
+
       {/* Success Popup */}
       {showSuccess && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -255,9 +362,12 @@ export default function CheckoutPage() {
                   value={shippingAddress.fullName}
                   onChange={(e) => {
                     setShippingAddress({...shippingAddress, fullName: e.target.value});
-                    if (errors.shipping.fullName) {
-                      setErrors(prev => ({...prev, shipping: {...prev.shipping, fullName: ''}}));
-                    }
+                    const error = validateFieldRealtime('fullName', e.target.value, 'shipping');
+                    setErrors(prev => ({...prev, shipping: {...prev.shipping, fullName: error}}));
+                  }}
+                  onBlur={(e) => {
+                    const error = validateFieldRealtime('fullName', e.target.value, 'shipping');
+                    setErrors(prev => ({...prev, shipping: {...prev.shipping, fullName: error}}));
                   }}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black ${
                     errors.shipping.fullName ? 'border-red-500' : 'border-gray-300'
@@ -278,9 +388,12 @@ export default function CheckoutPage() {
                   value={shippingAddress.email}
                   onChange={(e) => {
                     setShippingAddress({...shippingAddress, email: e.target.value});
-                    if (errors.shipping.email) {
-                      setErrors(prev => ({...prev, shipping: {...prev.shipping, email: ''}}));
-                    }
+                    const error = validateFieldRealtime('email', e.target.value, 'shipping');
+                    setErrors(prev => ({...prev, shipping: {...prev.shipping, email: error}}));
+                  }}
+                  onBlur={(e) => {
+                    const error = validateFieldRealtime('email', e.target.value, 'shipping');
+                    setErrors(prev => ({...prev, shipping: {...prev.shipping, email: error}}));
                   }}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black ${
                     errors.shipping.email ? 'border-red-500' : 'border-gray-300'
@@ -492,9 +605,16 @@ export default function CheckoutPage() {
                   onChange={(e) => {
                     const formatted = formatExpiryDate(e.target.value);
                     setPaymentDetails({...paymentDetails, expiryDate: formatted});
-                    if (errors.payment.expiryDate) {
+                    if (formatted.length === 5) {
+                      const error = validateFieldRealtime('expiryDate', formatted, 'payment');
+                      setErrors(prev => ({...prev, payment: {...prev.payment, expiryDate: error}}));
+                    } else {
                       setErrors(prev => ({...prev, payment: {...prev.payment, expiryDate: ''}}));
                     }
+                  }}
+                  onBlur={(e) => {
+                    const error = validateFieldRealtime('expiryDate', e.target.value, 'payment');
+                    setErrors(prev => ({...prev, payment: {...prev.payment, expiryDate: error}}));
                   }}
                   placeholder="MM/YY"
                   maxLength={5}
