@@ -257,16 +257,16 @@ export default function CheckoutPage() {
       const orderResult = await ordersService.createOrder(orderData);
       console.log('Order created:', orderResult);
       
+      // Refresh user data FIRST to get updated points
+      await dispatch(refreshUserData()).unwrap();
+      
       // Clear checkout data and cart
       localStorage.removeItem('checkoutData');
       dispatch(clearCart());
       
-      // Show success popup
+      // Show success popup AFTER points are updated
       setOrderId(orderResult._id);
       setShowSuccess(true);
-      
-      // Refresh user data from backend to get updated points
-      await dispatch(refreshUserData()).unwrap();
       
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Order placement failed';
