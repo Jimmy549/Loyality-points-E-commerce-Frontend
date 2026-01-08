@@ -15,10 +15,10 @@ type Props = {
 
 const Providers = ({ children }: Props) => {
   const storeRef = useRef<AppStoreWithPersistor | null>(null);
-  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
 
   if (!storeRef.current) {
@@ -26,29 +26,27 @@ const Providers = ({ children }: Props) => {
     storeRef.current = { store, persistor };
   }
 
-  if (!isClient) {
-    return (
-      <Provider store={storeRef.current.store}>
-        {children}
-      </Provider>
-    );
-  }
-
   return (
     <Provider store={storeRef.current.store}>
-      <PersistGate
-        loading={
-          <div className="flex items-center justify-center min-h-screen">
-            <SpinnerbLoader className="w-8 h-8 border-2 border-gray-300 border-r-black" />
-          </div>
-        }
-        persistor={storeRef.current.persistor}
-      >
-        <AuthInitializer>
-          <SocketManager />
-          {children}
-        </AuthInitializer>
-      </PersistGate>
+      {mounted ? (
+        <PersistGate
+          loading={
+            <div className="flex items-center justify-center min-h-screen">
+              <SpinnerbLoader className="w-8 h-8 border-2 border-gray-300 border-r-black" />
+            </div>
+          }
+          persistor={storeRef.current.persistor}
+        >
+          <AuthInitializer>
+            <SocketManager />
+            {children}
+          </AuthInitializer>
+        </PersistGate>
+      ) : (
+        <div className="flex items-center justify-center min-h-screen">
+          <SpinnerbLoader className="w-8 h-8 border-2 border-gray-300 border-r-black" />
+        </div>
+      )}
     </Provider>
   );
 };
