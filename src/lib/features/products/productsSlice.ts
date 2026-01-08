@@ -20,7 +20,8 @@ export type Color = {
 };
 
 const convertBackendProduct = (bp: BackendProduct): EnhancedProduct => ({
-  id: bp._id,
+  _id: bp._id,
+  id: parseInt(bp._id.slice(-6), 16),
   title: bp.title,
   description: bp.description,
   price: bp.price,
@@ -33,8 +34,8 @@ const convertBackendProduct = (bp: BackendProduct): EnhancedProduct => ({
   rating: 4.5,
   stock: bp.stock,
   category: bp.category,
-  paymentType: bp.loyaltyType,
-  loyaltyPointsCost: bp.loyaltyPointsCost,
+  paymentType: bp.loyaltyType.toLowerCase() as 'money' | 'points' | 'hybrid',
+  pointsPrice: bp.loyaltyPointsCost,
   isOnSale: bp.isOnSale,
   salePrice: bp.salePrice,
 });
