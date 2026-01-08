@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { productsService } from "../../services/products.service";
+import { productsService, BackendProduct } from "../../services/products.service";
 import { EnhancedProduct } from "@/types/enhanced-product.types";
 
 export interface ProductFilters {
@@ -19,13 +19,32 @@ export type Color = {
   code: string;
 };
 
-// Async thunks for API calls
+const convertBackendProduct = (bp: BackendProduct): EnhancedProduct => ({
+  id: bp._id,
+  title: bp.title,
+  description: bp.description,
+  price: bp.price,
+  srcUrl: bp.images[0] || '/images/placeholder.png',
+  gallery: bp.images,
+  discount: {
+    amount: bp.isOnSale && bp.salePrice ? bp.price - bp.salePrice : 0,
+    percentage: bp.isOnSale && bp.salePrice ? Math.round(((bp.price - bp.salePrice) / bp.price) * 100) : 0,
+  },
+  rating: 4.5,
+  stock: bp.stock,
+  category: bp.category,
+  paymentType: bp.loyaltyType,
+  loyaltyPointsCost: bp.loyaltyPointsCost,
+  isOnSale: bp.isOnSale,
+  salePrice: bp.salePrice,
+});
+
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async (filters?: ProductFilters) => {
     const response = await productsService.getProducts(filters);
     return {
-      products: response.products,
+      products: response.products.map(convertBackendProduct),
       totalPages: Math.ceil(response.total / response.limit),
       page: response.page
     };
@@ -36,7 +55,7 @@ export const fetchProduct = createAsyncThunk(
   'products/fetchProduct',
   async (id: string) => {
     const response = await productsService.getProductById(id);
-    return response;
+    return response ? convertBackendProduct(response) : null;
   }
 );
 
@@ -44,7 +63,7 @@ export const fetchFeaturedProducts = createAsyncThunk(
   'products/fetchFeaturedProducts',
   async () => {
     const response = await productsService.getProducts({ limit: 10 });
-    return response.products;
+    return response.products.map(convertBackendProduct);
   }
 );
 
