@@ -231,9 +231,6 @@ export default function CheckoutPage() {
     
     setLoading(true);
     try {
-      // Skip user data refresh to avoid permission errors
-      // await dispatch(refreshUserData());
-      
       // Create order data for backend
       const orderData = {
         pointsToUse: checkoutData?.pointsUsed || 0,
@@ -260,9 +257,6 @@ export default function CheckoutPage() {
       const orderResult = await ordersService.createOrder(orderData);
       console.log('Order created:', orderResult);
       
-      // Refresh user data from backend to get updated points
-      await dispatch(refreshUserData()).unwrap();
-      
       // Clear checkout data and cart
       localStorage.removeItem('checkoutData');
       dispatch(clearCart());
@@ -270,6 +264,9 @@ export default function CheckoutPage() {
       // Show success popup
       setOrderId(orderResult._id);
       setShowSuccess(true);
+      
+      // Refresh user data from backend to get updated points
+      await dispatch(refreshUserData()).unwrap();
       
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Order placement failed';
