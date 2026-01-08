@@ -37,7 +37,7 @@ const ProductCard = ({ data }: ProductCardProps) => {
           readonly
         />
         <span className="text-black text-xs xl:text-sm ml-[11px] xl:ml-[13px] pb-0.5 xl:pb-0">
-          {data.rating.toFixed(1)}
+          {(data.rating || 0).toFixed(1)}
           <span className="text-black/60">/5</span>
         </span>
       </div>
