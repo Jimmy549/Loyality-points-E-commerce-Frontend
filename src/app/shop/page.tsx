@@ -38,7 +38,7 @@ export default function ShopPage() {
         category: filters.category.length > 0 ? filters.category.join(',') : undefined
       });
       setProducts(response.products || []);
-      setTotalPages(response.totalPages || 1);
+      setTotalPages(Math.ceil((response.products?.length || 0) / 9));
     } catch (error) {
       console.error('Failed to fetch products:', error);
     } finally {
