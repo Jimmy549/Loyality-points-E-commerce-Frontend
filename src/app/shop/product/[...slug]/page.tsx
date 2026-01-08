@@ -25,11 +25,13 @@ export default function ProductPage() {
   const fetchProduct = async (id: string) => {
     try {
       const product = await productsService.getProductById(id);
-      setProductData(product);
+      if (product) {
+        setProductData(product as any);
+      }
       
       // Fetch related products
       const related = await productsService.getProducts({ limit: 4 });
-      setRelatedProducts(related.products || []);
+      setRelatedProducts(related.products as any || []);
     } catch (error) {
       console.error('Failed to fetch product:', error);
     } finally {
