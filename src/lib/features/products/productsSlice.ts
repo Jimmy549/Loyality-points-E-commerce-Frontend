@@ -23,7 +23,7 @@ export type Color = {
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async (filters?: ProductFilters) => {
-    const response = await productsService.getAllProducts(filters);
+    const response = await productsService.getProducts(filters);
     return {
       products: response.products,
       totalPages: Math.ceil(response.total / response.limit),
@@ -35,7 +35,7 @@ export const fetchProducts = createAsyncThunk(
 export const fetchProduct = createAsyncThunk(
   'products/fetchProduct',
   async (id: string) => {
-    const response = await productsService.getProduct(id);
+    const response = await productsService.getProductById(id);
     return response;
   }
 );
@@ -43,7 +43,7 @@ export const fetchProduct = createAsyncThunk(
 export const fetchFeaturedProducts = createAsyncThunk(
   'products/fetchFeaturedProducts',
   async () => {
-    const response = await productsService.getAllProducts({ limit: 10 });
+    const response = await productsService.getProducts({ limit: 10 });
     return response.products;
   }
 );
