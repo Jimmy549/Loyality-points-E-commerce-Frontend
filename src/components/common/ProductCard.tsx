@@ -11,9 +11,11 @@ type ProductCardProps = {
 };
 
 const ProductCard = ({ data }: ProductCardProps) => {
+  const productId = data._id || data.id;
+  
   return (
     <Link
-      href={`/shop/product/${data.id}/${data.title.split(" ").join("-")}`}
+      href={`/shop/product/${productId}/${data.title.split(" ").join("-")}`}
       className="flex flex-col items-start aspect-auto"
     >
       <div className="bg-[#F0EEED] rounded-[13px] lg:rounded-[20px] w-full lg:max-w-[295px] aspect-square mb-2.5 xl:mb-4 overflow-hidden">
