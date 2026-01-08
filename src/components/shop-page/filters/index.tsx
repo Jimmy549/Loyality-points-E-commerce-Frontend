@@ -6,7 +6,7 @@ import PriceSection from "@/components/shop-page/filters/PriceSection";
 import SizeSection from "@/components/shop-page/filters/SizeSection";
 import { Button } from "@/components/ui/button";
 
-const Filters = ({ onApply }) => {
+const Filters = ({ onApply }: { onApply: (filters: any) => void }) => {
   const [filters, setFilters] = useState({
     category: [],
     priceMin: 0,

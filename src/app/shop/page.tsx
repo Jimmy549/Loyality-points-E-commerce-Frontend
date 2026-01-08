@@ -47,7 +47,7 @@ export default function ShopPage() {
     }
   };
 
-  const handleApplyFilters = (newFilters) => {
+  const handleApplyFilters = (newFilters: any) => {
     setFilters(newFilters);
     setPage(1);
   };
