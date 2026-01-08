@@ -13,7 +13,7 @@ type Props = {
 };
 
 const Providers = ({ children }: Props) => {
-  const storeRef = useRef<AppStore>();
+  const storeRef = useRef<AppStore | null>(null);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
