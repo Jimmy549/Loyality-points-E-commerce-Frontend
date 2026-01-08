@@ -2,18 +2,19 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import { Provider } from "react-redux";
-import { makeStore, AppStore } from "../lib/store";
+import { AppStoreWithPersistor } from "../lib/store";
 import { PersistGate } from "redux-persist/integration/react";
 import SpinnerbLoader from "@/components/ui/SpinnerbLoader";
 import SocketManager from "@/components/layout/SocketManager";
 import AuthInitializer from "@/components/layout/AuthInitializer";
+import { makeStore } from "../lib/store";
 
 type Props = {
   children: React.ReactNode;
 };
 
 const Providers = ({ children }: Props) => {
-  const storeRef = useRef<AppStore | null>(null);
+  const storeRef = useRef<AppStoreWithPersistor | null>(null);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
