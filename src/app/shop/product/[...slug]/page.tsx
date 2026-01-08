@@ -1,3 +1,5 @@
+"use client";
+
 import {
   newArrivalsData,
   relatedProductData,
@@ -8,7 +10,8 @@ import BreadcrumbProduct from "@/components/product-page/BreadcrumbProduct";
 import Header from "@/components/product-page/Header";
 import Tabs from "@/components/product-page/Tabs";
 import { Product } from "@/types/product.types";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
+import { useMemo } from "react";
 
 const data: Product[] = [
   ...newArrivalsData,
@@ -16,14 +19,13 @@ const data: Product[] = [
   ...relatedProductData,
 ];
 
-export default async function ProductPage({
-  params,
-}: {
-  params: Promise<{ slug: string[] }>;
-}) {
-  const { slug } = await params;
-  const productData = data.find(
-    (product) => product.id === Number(slug[0])
+export default function ProductPage() {
+  const params = useParams();
+  const slug = params.slug as string[];
+  
+  const productData = useMemo(() => 
+    data.find((product) => product.id === Number(slug?.[0])),
+    [slug]
   );
 
   if (!productData?.title) {
