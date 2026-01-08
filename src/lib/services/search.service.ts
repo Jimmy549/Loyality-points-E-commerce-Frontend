@@ -85,7 +85,7 @@ export class ProductSearchService {
         case 'rating':
           return b.rating - a.rating;
         case 'newest':
-          return b.id - a.id; // Assuming higher ID means newer
+          return (b.id || 0) - (a.id || 0); // Assuming higher ID means newer
         case 'popularity':
           return b.rating * Math.random() - a.rating * Math.random(); // Mock popularity
         default:
