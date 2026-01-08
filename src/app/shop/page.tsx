@@ -69,7 +69,7 @@ export default function ShopPage() {
             <div className="flex flex-col lg:flex-row lg:justify-between">
               <div className="flex items-center justify-between">
                 <h1 className="font-bold text-2xl md:text-[32px]">Shop</h1>
-                <MobileFilters onApply={handleApplyFilters} />
+                <MobileFilters />
               </div>
               <div className="flex flex-col sm:items-center sm:flex-row">
                 <span className="text-sm md:text-base text-black/60 mr-3">
