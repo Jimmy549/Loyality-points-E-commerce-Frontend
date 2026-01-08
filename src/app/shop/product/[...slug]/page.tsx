@@ -29,11 +29,11 @@ export default function ProductPage() {
     [slug]
   );
 
-  // useEffect(() => {
-  //   if (!productData?.title && slug) {
-  //     router.push('/');
-  //   }
-  // }, [productData, slug, router]);
+  useEffect(() => {
+    if (!productData?.title && slug) {
+      router.push('/');
+    }
+  }, [productData, slug, router]);
 
   if (!productData?.title) {
     return null;
