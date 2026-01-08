@@ -118,7 +118,7 @@ const authSlice = createSlice({
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
-        authService.setUser(state.user);
+        authService.setUser(state.user as User);
       }
     },
     
@@ -189,9 +189,9 @@ const authSlice = createSlice({
       })
       // Refresh user data
       .addCase(refreshUserData.fulfilled, (state, action) => {
-        if (state.user) {
+        if (state.user && action.payload) {
           state.user = { ...state.user, ...action.payload };
-          authService.setUser(state.user);
+          authService.setUser(state.user as User);
         }
       });
   },
