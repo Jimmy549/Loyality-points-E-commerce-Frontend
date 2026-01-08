@@ -228,8 +228,8 @@ export default function OrderDetailsPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">${item.price.toFixed(2)}</p>
-                  <p className="text-sm text-gray-600">${productPrice.toFixed(2)} each</p>
+                  <p className="font-semibold">${(item.price || 0).toFixed(2)}</p>
+                  <p className="text-sm text-gray-600">${(productPrice || 0).toFixed(2)} each</p>
                 </div>
               </div>
             );

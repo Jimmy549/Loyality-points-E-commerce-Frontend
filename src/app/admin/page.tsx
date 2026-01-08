@@ -352,7 +352,7 @@ export default function AdminDashboard() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm font-bold text-gray-900">
-                      ₹{order.totalAmount.toFixed(2)}
+                      ₹{(order.totalAmount || 0).toFixed(2)}
                     </span>
                   </td>
                 </tr>
