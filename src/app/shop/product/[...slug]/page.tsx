@@ -10,8 +10,8 @@ import BreadcrumbProduct from "@/components/product-page/BreadcrumbProduct";
 import Header from "@/components/product-page/Header";
 import Tabs from "@/components/product-page/Tabs";
 import { Product } from "@/types/product.types";
-import { notFound, useParams } from "next/navigation";
-import { useMemo } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useMemo, useEffect } from "react";
 
 const data: Product[] = [
   ...newArrivalsData,
@@ -21,6 +21,7 @@ const data: Product[] = [
 
 export default function ProductPage() {
   const params = useParams();
+  const router = useRouter();
   const slug = params.slug as string[];
   
   const productData = useMemo(() => 
@@ -28,8 +29,14 @@ export default function ProductPage() {
     [slug]
   );
 
+  useEffect(() => {
+    if (!productData?.title && slug) {
+      router.push('/');
+    }
+  }, [productData, slug, router]);
+
   if (!productData?.title) {
-    notFound();
+    return null;
   }
 
   return (
