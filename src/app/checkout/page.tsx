@@ -662,18 +662,18 @@ export default function CheckoutPage() {
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600">Subtotal</span>
-              <span className="font-medium">${checkoutData.subtotal}</span>
+              <span className="font-medium">${(checkoutData.subtotal || 0).toFixed(2)}</span>
             </div>
-            {checkoutData.discount > 0 && (
+            {(checkoutData.discount || 0) > 0 && (
               <div className="flex justify-between">
                 <span className="text-gray-600">Discount</span>
-                <span className="font-medium text-red-600">-${checkoutData.discount}</span>
+                <span className="font-medium text-red-600">-${(checkoutData.discount || 0).toFixed(2)}</span>
               </div>
             )}
-            {checkoutData.pointsDiscount > 0 && (
+            {(checkoutData.pointsDiscount || 0) > 0 && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Points Discount ({checkoutData.pointsUsed} pts)</span>
-                <span className="font-medium text-green-600">-${checkoutData.pointsDiscount}</span>
+                <span className="text-gray-600">Points Discount ({checkoutData.pointsUsed || 0} pts)</span>
+                <span className="font-medium text-green-600">-${(checkoutData.pointsDiscount || 0).toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between">
@@ -683,7 +683,7 @@ export default function CheckoutPage() {
             <hr className="border-gray-200" />
             <div className="flex justify-between text-lg font-semibold">
               <span>Total</span>
-              <span>${checkoutData.total}</span>
+              <span>${(checkoutData.total || 0).toFixed(2)}</span>
             </div>
           </div>
           
