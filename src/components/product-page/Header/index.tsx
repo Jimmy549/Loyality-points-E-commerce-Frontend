@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import PhotoSection from "./PhotoSection";
 import { Product } from "@/types/product.types";
