@@ -46,11 +46,12 @@ class AuthService {
 
   async getProfile(): Promise<User> {
     try {
-      // Try to get profile, but fallback gracefully if it fails
-      const response = await api.get('/users/profile');
+      const response = await api.get('/users/me');
+      if (response.data) {
+        this.setUser(response.data);
+      }
       return response.data;
     } catch (error: any) {
-      // If profile endpoint fails, return current user data from localStorage
       console.warn('Profile refresh failed, using cached data');
       const cachedUser = this.getUser();
       if (cachedUser) {

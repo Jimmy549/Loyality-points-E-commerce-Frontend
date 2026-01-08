@@ -1,16 +1,19 @@
 "use client";
 
-import { useAppSelector } from "@/lib/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/hooks/redux";
+import { refreshUserData } from "@/lib/features/auth/authSlice";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { User, Mail, Shield, Award, Calendar, MapPin, Phone, Edit, Package } from "lucide-react";
+import { User, Mail, Shield, Award, Calendar, MapPin, Phone, Edit, Package, RefreshCw } from "lucide-react";
 
 export default function ProfilePage() {
   const { isAuthenticated, user, loading } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [userInfo, setUserInfo] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -37,9 +40,19 @@ export default function ProfilePage() {
   }, [isAuthenticated, loading, router, user]);
 
   const handleSaveProfile = () => {
-    // Here you would typically make an API call to update user info
     setIsEditing(false);
     alert("Profile updated successfully!");
+  };
+
+  const handleRefreshPoints = async () => {
+    setRefreshing(true);
+    try {
+      await dispatch(refreshUserData()).unwrap();
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const getLoyaltyTier = (points: number) => {
@@ -206,8 +219,18 @@ export default function ProfilePage() {
             </h3>
             <div className="text-center mb-6">
               <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 text-white p-6 rounded-lg mb-4">
-                <h4 className="text-lg font-semibold mb-2">Your Points Balance</h4>
-                <p className="text-4xl font-bold">{user.loyaltyPoints}</p>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-lg font-semibold">Your Points Balance</h4>
+                  <button
+                    onClick={handleRefreshPoints}
+                    disabled={refreshing}
+                    className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors disabled:opacity-50"
+                    title="Refresh Points"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  </button>
+                </div>
+                <p className="text-4xl font-bold">{user.loyaltyPoints || 0}</p>
                 <p className="text-sm opacity-90 mt-2">Points Available</p>
               </div>
               <div className={`inline-block px-4 py-2 rounded-full ${loyaltyTier.bg} ${loyaltyTier.color} font-medium`}>
