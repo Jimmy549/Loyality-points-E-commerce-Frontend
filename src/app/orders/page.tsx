@@ -183,7 +183,7 @@ export default function OrdersPage() {
                           <span className="font-medium">{productName}</span>
                           <span className="text-gray-500 ml-2">x {item.quantity}</span>
                         </div>
-                        <span className="font-semibold">${itemPrice.toFixed(2)}</span>
+                        <span className="font-semibold">${(itemPrice || 0).toFixed(2)}</span>
                       </div>
                     );
                   })}
