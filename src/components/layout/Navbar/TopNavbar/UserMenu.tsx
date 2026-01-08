@@ -29,13 +29,8 @@ export default function UserMenu() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await dispatch(logoutUser()).unwrap();
-    } catch (error) {
-      // Even if API fails, clear local state
-      dispatch({ type: 'auth/clearCredentials' });
-    }
+  const handleLogout = () => {
+    dispatch(logoutUser());
     setIsOpen(false);
   };
 
