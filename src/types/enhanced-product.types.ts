@@ -1,6 +1,6 @@
 export interface EnhancedProduct {
-  _id?: string;  // MongoDB ObjectId from backend
-  id?: number;   // Legacy numeric ID for mock data
+  _id?: string;
+  id?: number;
   title: string;
   srcUrl: string;
   gallery?: string[];
@@ -15,6 +15,7 @@ export interface EnhancedProduct {
   paymentType: 'money' | 'points' | 'hybrid';
   pointsPrice?: number;
   isOnSale?: boolean;
+  salePrice?: number;
   saleStartDate?: string;
   saleEndDate?: string;
   category?: string;
@@ -23,8 +24,8 @@ export interface EnhancedProduct {
 }
 
 export interface Product {
-  _id?: string;  // MongoDB ObjectId from backend
-  id?: number;   // Legacy numeric ID for mock data
+  _id?: string;
+  id?: number;
   title: string;
   srcUrl: string;
   gallery?: string[];
@@ -39,6 +40,7 @@ export interface Product {
   paymentType: 'money' | 'points' | 'hybrid';
   pointsPrice?: number;
   isOnSale?: boolean;
+  salePrice?: number;
   saleStartDate?: string;
   saleEndDate?: string;
   category?: string;
