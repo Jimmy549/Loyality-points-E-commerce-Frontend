@@ -16,23 +16,23 @@ const Filters = ({ onApply }: { onApply?: (filters: any) => void }) => {
     styles: []
   });
 
-  const handleCategoryChange = (categories) => {
+  const handleCategoryChange = (categories: any) => {
     setFilters(prev => ({ ...prev, category: categories }));
   };
 
-  const handlePriceChange = (min, max) => {
+  const handlePriceChange = (min: any, max: any) => {
     setFilters(prev => ({ ...prev, priceMin: min, priceMax: max }));
   };
 
-  const handleColorChange = (colors) => {
+  const handleColorChange = (colors: any) => {
     setFilters(prev => ({ ...prev, colors }));
   };
 
-  const handleSizeChange = (sizes) => {
+  const handleSizeChange = (sizes: any) => {
     setFilters(prev => ({ ...prev, sizes }));
   };
 
-  const handleStyleChange = (styles) => {
+  const handleStyleChange = (styles: any) => {
     setFilters(prev => ({ ...prev, styles }));
   };
 
