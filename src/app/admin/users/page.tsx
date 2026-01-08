@@ -73,21 +73,13 @@ export default function AdminUsers() {
         throw new Error('No authentication token found');
       }
 
-      const userEmail = users.find(u => u._id === userId)?.email;
-      if (!userEmail) {
-        throw new Error('User not found');
-      }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/roles/assign`, {
-        method: 'POST',
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/role`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          email: userEmail,
-          role: newRole 
-        })
+        body: JSON.stringify({ role: newRole })
       });
 
       if (!response.ok) {
@@ -104,7 +96,7 @@ export default function AdminUsers() {
       console.error('Failed to update user role:', error);
       setError(error instanceof Error ? error.message : 'Failed to update user role');
     }
-  }, [users, fetchUsers, router]);
+  }, [fetchUsers, router]);
 
   const getRoleColor = (role: string) => {
     switch (role) {
