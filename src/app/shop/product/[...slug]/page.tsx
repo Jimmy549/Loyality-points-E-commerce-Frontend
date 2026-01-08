@@ -1,23 +1,49 @@
 "use client";
 
-import { allProductsData, relatedProductData } from "@/data/products";
+import { useEffect, useState } from "react";
 import ProductListSec from "@/components/common/ProductListSec";
 import BreadcrumbProduct from "@/components/product-page/BreadcrumbProduct";
 import Header from "@/components/product-page/Header";
 import Tabs from "@/components/product-page/Tabs";
 import { Product } from "@/types/product.types";
 import { useParams } from "next/navigation";
-import { useMemo } from "react";
+import { productsService } from "@/lib/services/products.service";
 
 export default function ProductPage() {
   const params = useParams();
   const slug = params.slug as string[];
+  const [productData, setProductData] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   
-  const productData = useMemo(() => {
-    if (!slug || !slug[0]) return null;
-    const id = Number(slug[0]);
-    return allProductsData.find((p) => p.id === id);
+  useEffect(() => {
+    if (slug?.[0]) {
+      fetchProduct(slug[0]);
+    }
   }, [slug]);
+
+  const fetchProduct = async (id: string) => {
+    try {
+      const product = await productsService.getProductById(id);
+      setProductData(product);
+      
+      // Fetch related products
+      const related = await productsService.getProducts({ limit: 4 });
+      setRelatedProducts(related.products || []);
+    } catch (error) {
+      console.error('Failed to fetch product:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </main>
+    );
+  }
 
   if (!productData) {
     return (
@@ -42,7 +68,7 @@ export default function ProductPage() {
         <Tabs />
       </div>
       <div className="mb-[50px] sm:mb-20">
-        <ProductListSec title="You might also like" data={relatedProductData} />
+        <ProductListSec title="You might also like" data={relatedProducts} />
       </div>
     </main>
   );
