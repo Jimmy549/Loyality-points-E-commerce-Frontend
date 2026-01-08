@@ -130,24 +130,31 @@ export default function CartPage() {
                       You have {user.loyaltyPoints || 0} points available (100 points = $5)
                     </p>
                     {user.loyaltyPoints > 0 ? (
-                      <div className="flex space-x-3">
-                        <input
-                          type="number"
-                          min="0"
-                          max={maxPointsUsable}
-                          step="100"
-                          value={pointsToUse}
-                          onChange={(e) => setPointsToUse(Math.min(maxPointsUsable, parseInt(e.target.value) || 0))}
-                          className="flex-1 px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                          placeholder="Points to use"
-                        />
-                        <Button
-                          type="button"
-                          onClick={() => setPointsToUse(maxPointsUsable)}
-                          className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md"
-                        >
-                          Use Max
-                        </Button>
+                      <div className="space-y-2">
+                        <div className="flex space-x-3">
+                          <input
+                            type="number"
+                            min="0"
+                            max={maxPointsUsable}
+                            value={pointsToUse}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 0;
+                              setPointsToUse(Math.min(maxPointsUsable, Math.max(0, value)));
+                            }}
+                            className="flex-1 px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                            placeholder="Enter points to use"
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => setPointsToUse(maxPointsUsable)}
+                            className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md whitespace-nowrap"
+                          >
+                            Use Max
+                          </Button>
+                        </div>
+                        <p className="text-xs text-yellow-600">
+                          Max usable: {maxPointsUsable} points (${Math.floor(maxPointsUsable / 100) * 5} discount)
+                        </p>
                       </div>
                     ) : (
                       <p className="text-sm text-yellow-600 italic">
