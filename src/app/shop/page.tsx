@@ -1,28 +1,59 @@
-import BreadcrumbShop from "@/components/shop-page/BreadcrumbShop";
+"use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useState, useEffect } from "react";
+import BreadcrumbShop from "@/components/shop-page/BreadcrumbShop";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MobileFilters from "@/components/shop-page/filters/MobileFilters";
 import Filters from "@/components/shop-page/filters";
 import { FiSliders } from "react-icons/fi";
-import { newArrivalsData, relatedProductData, topSellingData } from "@/app/(main)/page";
 import ProductCard from "@/components/common/ProductCard";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { productsService } from "@/lib/services/products.service";
 
 export default function ShopPage() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    category: [],
+    priceMin: 0,
+    priceMax: 1000,
+    colors: [],
+    sizes: [],
+    styles: []
+  });
+  const [sortBy, setSortBy] = useState("most-popular");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [filters, sortBy, page]);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const response = await productsService.getProducts({
+        page,
+        limit: 9,
+        category: filters.category.length > 0 ? filters.category.join(',') : undefined,
+        minPrice: filters.priceMin,
+        maxPrice: filters.priceMax,
+        sortBy: sortBy === 'low-price' ? 'price' : sortBy === 'high-price' ? '-price' : undefined
+      });
+      setProducts(response.products || []);
+      setTotalPages(response.totalPages || 1);
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApplyFilters = (newFilters) => {
+    setFilters(newFilters);
+    setPage(1);
+  };
+
   return (
     <main className="pb-20">
       <div className="max-w-frame mx-auto px-4 xl:px-0">
@@ -34,21 +65,21 @@ export default function ShopPage() {
               <span className="font-bold text-black text-xl">Filters</span>
               <FiSliders className="text-2xl text-black/40" />
             </div>
-            <Filters />
+            <Filters onApply={handleApplyFilters} />
           </div>
           <div className="flex flex-col w-full space-y-5">
             <div className="flex flex-col lg:flex-row lg:justify-between">
               <div className="flex items-center justify-between">
-                <h1 className="font-bold text-2xl md:text-[32px]">Casual</h1>
-                <MobileFilters />
+                <h1 className="font-bold text-2xl md:text-[32px]">Shop</h1>
+                <MobileFilters onApply={handleApplyFilters} />
               </div>
               <div className="flex flex-col sm:items-center sm:flex-row">
                 <span className="text-sm md:text-base text-black/60 mr-3">
-                  Showing 1-10 of 100 Products
+                  Showing {products.length} Products
                 </span>
                 <div className="flex items-center">
                   Sort by:{" "}
-                  <Select defaultValue="most-popular">
+                  <Select value={sortBy} onValueChange={setSortBy}>
                     <SelectTrigger className="font-medium text-sm px-1.5 sm:text-base w-fit text-black bg-transparent shadow-none border-none">
                       <SelectValue />
                     </SelectTrigger>
@@ -61,74 +92,44 @@ export default function ShopPage() {
                 </div>
               </div>
             </div>
-            <div className="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-              {[
-                ...relatedProductData.slice(1, 4),
-                ...newArrivalsData.slice(1, 4),
-                ...topSellingData.slice(1, 4),
-              ].map((product) => (
-                <ProductCard key={product.id} data={product} />
-              ))}
-            </div>
+            
+            {loading ? (
+              <div className="text-center py-12">Loading products...</div>
+            ) : (
+              <div className="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+                {products.map((product) => (
+                  <ProductCard key={product.id || product._id} data={product} />
+                ))}
+              </div>
+            )}
+            
+            {!loading && products.length === 0 && (
+              <div className="text-center py-12 text-gray-500">No products found</div>
+            )}
+            
             <hr className="border-t-black/10" />
             <Pagination className="justify-between">
-              <PaginationPrevious href="#" className="border border-black/10" />
+              <PaginationPrevious 
+                onClick={() => setPage(p => Math.max(1, p - 1))} 
+                className="border border-black/10 cursor-pointer" 
+              />
               <PaginationContent>
-                <PaginationItem>
-                  <PaginationLink
-                    href="#"
-                    className="text-black/50 font-medium text-sm"
-                    isActive
-                  >
-                    1
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink
-                    href="#"
-                    className="text-black/50 font-medium text-sm"
-                  >
-                    2
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem className="hidden lg:block">
-                  <PaginationLink
-                    href="#"
-                    className="text-black/50 font-medium text-sm"
-                  >
-                    3
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationEllipsis className="text-black/50 font-medium text-sm" />
-                </PaginationItem>
-                <PaginationItem className="hidden lg:block">
-                  <PaginationLink
-                    href="#"
-                    className="text-black/50 font-medium text-sm"
-                  >
-                    8
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem className="hidden sm:block">
-                  <PaginationLink
-                    href="#"
-                    className="text-black/50 font-medium text-sm"
-                  >
-                    9
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink
-                    href="#"
-                    className="text-black/50 font-medium text-sm"
-                  >
-                    10
-                  </PaginationLink>
-                </PaginationItem>
+                {[...Array(Math.min(totalPages, 5))].map((_, i) => (
+                  <PaginationItem key={i}>
+                    <PaginationLink
+                      onClick={() => setPage(i + 1)}
+                      className="text-black/50 font-medium text-sm cursor-pointer"
+                      isActive={page === i + 1}
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
               </PaginationContent>
-
-              <PaginationNext href="#" className="border border-black/10" />
+              <PaginationNext 
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))} 
+                className="border border-black/10 cursor-pointer" 
+              />
             </Pagination>
           </div>
         </div>
