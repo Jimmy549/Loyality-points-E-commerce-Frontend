@@ -146,7 +146,10 @@ export default function AddProductPage() {
         // Clean up preview URLs
         previewUrls.forEach(url => URL.revokeObjectURL(url));
         alert('Product created successfully!');
-        router.push("/admin/products");
+        // Redirect to dashboard to see updated stats
+        router.push("/admin");
+        // Force page refresh to update stats
+        window.location.href = "/admin";
       } else {
         const errorText = await response.text();
         console.error("Failed to create product:", errorText);

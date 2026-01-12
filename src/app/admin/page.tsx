@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { ShoppingBag, Package, CheckCircle, ArrowLeft, Calendar, Clock, X } from "lucide-react";
+import { ShoppingBag, Package, CheckCircle, ArrowLeft, Calendar, X } from "lucide-react";
 import StatCard from "@/components/admin/StatCard";
 import SaleGraph from "@/components/admin/SaleGraph";
 import BestSellers from "@/components/admin/BestSellers";
@@ -31,7 +31,6 @@ export default function AdminDashboard() {
   });
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentTime, setCurrentTime] = useState(new Date());
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
     end: new Date()
@@ -44,16 +43,6 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchDashboardData();
     
-    // Update clock every second
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    
-    // Auto-refresh dashboard stats every 30 seconds
-    const statsRefreshTimer = setInterval(() => {
-      fetchDashboardData();
-    }, 30000);
-    
     // Close calendar on outside click
     const handleClickOutside = (event: MouseEvent) => {
       if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
@@ -64,8 +53,6 @@ export default function AdminDashboard() {
     document.addEventListener('mousedown', handleClickOutside);
     
     return () => {
-      clearInterval(timer);
-      clearInterval(statsRefreshTimer);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
@@ -168,12 +155,6 @@ export default function AdminDashboard() {
             <h1 className="page-title">Dashboard</h1>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
-              <Clock size={18} className="text-blue-600" />
-              <span className="text-sm font-medium text-blue-900">
-                {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-              </span>
-            </div>
             <div className="relative" ref={calendarRef}>
               <button 
                 onClick={() => setShowCalendar(!showCalendar)}
