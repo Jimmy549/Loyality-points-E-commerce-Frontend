@@ -49,6 +49,11 @@ export default function AdminDashboard() {
       setCurrentTime(new Date());
     }, 1000);
     
+    // Auto-refresh dashboard stats every 30 seconds
+    const statsRefreshTimer = setInterval(() => {
+      fetchDashboardData();
+    }, 30000);
+    
     // Close calendar on outside click
     const handleClickOutside = (event: MouseEvent) => {
       if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
@@ -60,6 +65,7 @@ export default function AdminDashboard() {
     
     return () => {
       clearInterval(timer);
+      clearInterval(statsRefreshTimer);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
@@ -100,11 +106,12 @@ export default function AdminDashboard() {
 
       if (statsRes.ok) {
         const data = await statsRes.json();
+        console.log('Dashboard stats from backend:', data);
         setStats({
-          totalOrders: data.totalOrders || 126500,
-          activeOrders: data.activeOrders || 126500,
-          completedOrders: data.completedOrders || 126500,
-          returnOrders: data.returnOrders || 126500,
+          totalOrders: data.totalOrders || 0,
+          activeOrders: data.activeOrders || 0,
+          completedOrders: data.completedOrders || 0,
+          returnOrders: data.returnOrders || 0,
         });
       }
 
