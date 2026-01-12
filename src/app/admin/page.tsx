@@ -16,10 +16,11 @@ interface DashboardStats {
 
 interface RecentOrder {
   _id: string;
-  userId: { name: string; email: string };
+  userId: { name: string; email: string; _id: string };
   totalAmount: number;
   status: string;
   createdAt: string;
+  pointsEarned?: number;
 }
 
 export default function AdminDashboard() {
@@ -31,6 +32,7 @@ export default function AdminDashboard() {
   });
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusDropdown, setStatusDropdown] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
     end: new Date()
@@ -77,6 +79,38 @@ export default function AdminDashboard() {
       end: new Date()
     });
     setShowCalendar(false);
+  };
+
+  const handleStatusChange = async (orderId: string, newStatus: string, order: RecentOrder) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/orders/${orderId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      if (response.ok) {
+        // Update local state
+        setRecentOrders(prev => 
+          prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o)
+        );
+        setStatusDropdown(null);
+        alert(`Order status updated to ${newStatus}`);
+        // Refresh data to get updated points
+        fetchDashboardData();
+      } else {
+        alert('Failed to update order status');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Error updating order status');
+    }
   };
 
   const fetchDashboardData = async () => {
@@ -334,9 +368,48 @@ export default function AdminDashboard() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`${getStatusBadgeClass(order.status)} transition-all duration-200 hover:scale-105`}>
-                      ● {order.status}
-                    </span>
+                    <div className="relative">
+                      <button
+                        onClick={() => setStatusDropdown(statusDropdown === order._id ? null : order._id)}
+                        className={`${getStatusBadgeClass(order.status)} transition-all duration-200 hover:scale-105 cursor-pointer`}
+                      >
+                        ● {order.status}
+                      </button>
+                      {statusDropdown === order._id && (
+                        <div className="absolute z-10 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                          <button
+                            onClick={() => handleStatusChange(order._id, 'PENDING', order)}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                          >
+                            Pending
+                          </button>
+                          <button
+                            onClick={() => handleStatusChange(order._id, 'CONFIRMED', order)}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                          >
+                            Confirmed
+                          </button>
+                          <button
+                            onClick={() => handleStatusChange(order._id, 'SHIPPED', order)}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                          >
+                            Shipped
+                          </button>
+                          <button
+                            onClick={() => handleStatusChange(order._id, 'DELIVERED', order)}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                          >
+                            Delivered
+                          </button>
+                          <button
+                            onClick={() => handleStatusChange(order._id, 'CANCELLED', order)}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
+                          >
+                            Cancelled
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm font-bold text-gray-900">
