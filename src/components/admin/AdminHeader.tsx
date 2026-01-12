@@ -26,6 +26,20 @@ export default function AdminHeader() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.relative')) {
+        setDropdownOpen(false);
+        setNotificationsOpen(false);
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   useEffect(() => {
     // Fetch initial notifications from backend
     fetchNotifications();
@@ -244,7 +258,10 @@ export default function AdminHeader() {
               <div className="notifications-footer">
                 <button 
                   className="mark-read-btn"
-                  onClick={() => setNotifications([])}
+                  onClick={() => {
+                    setNotifications([]);
+                    setNotificationsOpen(false);
+                  }}
                 >
                   ✓ MARK ALL AS READ
                 </button>
