@@ -35,7 +35,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Admin Footer */}
         <footer className="admin-footer">
           <div className="footer-content">
-            <p className="footer-text">© 2023 - pulstron Dashboard</p>
+            <p className="footer-text">© 2026 - pulstron Dashboard</p>
             <div className="footer-links">
               <a href="#" className="footer-link">About</a>
               <a href="#" className="footer-link">Careers</a>
