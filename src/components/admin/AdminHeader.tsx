@@ -2,7 +2,7 @@
 
 import { Search, Bell, ChevronDown, X } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/hooks/redux";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import socketService from "@/lib/socket/socket.service";
 import { logout } from "@/lib/features/auth/authSlice";
@@ -25,14 +25,21 @@ export default function AdminHeader() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('.relative')) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setNotificationsOpen(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setSearchOpen(false);
       }
     };
@@ -149,7 +156,7 @@ export default function AdminHeader() {
 
       <div className="header-right">
         {/* Search */}
-        <div className="relative">
+        <div className="relative" ref={searchRef}>
           <button
             className="header-icon-btn"
             aria-label="Search"
@@ -214,7 +221,7 @@ export default function AdminHeader() {
         </div>
 
         {/* Notifications */}
-        <div className="relative">
+        <div className="relative" ref={notificationsRef}>
           <button
             className="header-icon-btn relative"
             aria-label="Notifications"
@@ -274,7 +281,7 @@ export default function AdminHeader() {
         </div>
 
         {/* Admin Dropdown */}
-        <div className="admin-dropdown">
+        <div className="admin-dropdown" ref={dropdownRef}>
           <button
             className="admin-dropdown-btn"
             onClick={() => setDropdownOpen(!dropdownOpen)}
