@@ -58,6 +58,8 @@ export interface Order {
   paymentMethod: string;
   createdAt: string;
   updatedAt: string;
+  checkoutUrl?: string;
+  sessionId?: string;
 }
 
 export const ordersService = {
