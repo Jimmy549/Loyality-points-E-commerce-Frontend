@@ -323,8 +323,8 @@ export default function AdminDashboard() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center transition-transform duration-200 hover:scale-110">
-                        <span className="text-xs font-medium text-white">
+                      <div className="w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center transition-transform duration-200 hover:scale-110">
+                        <span className="text-xs font-medium text-gray-700">
                           {order.userId.name.charAt(0)}
                         </span>
                       </div>
