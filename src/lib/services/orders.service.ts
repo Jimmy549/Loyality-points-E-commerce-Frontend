@@ -56,6 +56,7 @@ export interface Order {
     country: string;
   };
   paymentMethod: string;
+  paymentStatus?: 'paid' | 'pending' | 'failed' | 'refunded';
   createdAt: string;
   updatedAt: string;
   checkoutUrl?: string;
