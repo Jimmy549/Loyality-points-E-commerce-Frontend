@@ -291,7 +291,7 @@ export default function AdminHeader() {
               </div>
               <div className="dropdown-divider"></div>
               <button
-                className="dropdown-item dropdown-logout"
+                className="dropdown-item dropdown-item-clickable dropdown-logout"
                 onClick={handleLogout}
               >
                 LOG OUT
