@@ -56,9 +56,9 @@ export default function AdminSidebar() {
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="logo-container">
-          <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
-            <path d="M20 5L35 15V25L20 35L5 25V15L20 5Z" fill="white" opacity="0.3"/>
-            <path d="M20 10L30 17V27L20 34L10 27V17L20 10Z" fill="white"/>
+          <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+            <path d="M20 5L35 15V25L20 35L5 25V15L20 5Z" fill="#004C6D" opacity="0.2"/>
+            <path d="M20 10L30 17V27L20 34L10 27V17L20 10Z" fill="#004C6D"/>
           </svg>
           <span className="logo-text">Arik</span>
         </div>

@@ -151,23 +151,24 @@
 }
 
 .sidebar-logo {
-  padding: 24px 16px;
-  border-bottom: 1px solid #E5E7EB;
-  background: linear-gradient(135deg, #004C6D 0%, #006B8F 100%);
-  color: white;
+  padding: 20px 16px;
+  border-bottom: none;
+  background: white;
+  color: #004C6D;
 }
 
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .logo-text {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: 700;
   font-style: italic;
-  color: white;
+  color: #004C6D;
+  letter-spacing: -0.5px;
 }
 
 .sidebar-nav {
