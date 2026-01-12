@@ -96,20 +96,20 @@ export default function AdminDashboard() {
       );
 
       if (response.ok) {
-        // Update local state
         setRecentOrders(prev => 
           prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o)
         );
         setStatusDropdown(null);
         alert(`Order status updated to ${newStatus}`);
-        // Refresh data to get updated points
         fetchDashboardData();
       } else {
-        alert('Failed to update order status');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Status update error:', errorData);
+        alert(`Failed to update: ${errorData.message || 'Server error'}`);
       }
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Error updating order status');
+      alert('Network error. Please try again.');
     }
   };
 
@@ -376,7 +376,7 @@ export default function AdminDashboard() {
                         ● {order.status}
                       </button>
                       {statusDropdown === order._id && (
-                        <div className="absolute z-10 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                        <div className="absolute left-0 top-full mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                           <button
                             onClick={() => handleStatusChange(order._id, 'PENDING', order)}
                             className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
