@@ -24,7 +24,12 @@ export default function ProductPage() {
 
   const fetchProduct = async (id: string) => {
     try {
-      const product = await productsService.getProductById(id);
+      // Check if ID is a number and needs mapping
+      const productId = /^\d+$/.test(id) ? 
+        require('@/lib/utils/productIdMapping').getBackendProductId(parseInt(id)) : 
+        id;
+      
+      const product = await productsService.getProductById(productId);
       if (product) {
         setProductData(product as any);
       }

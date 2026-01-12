@@ -65,19 +65,23 @@ export const ordersService = {
     try {
       console.log('Sending order to backend:', orderData);
       
-      const response = await api.post('/orders/checkout', {
-        pointsToUse: orderData.pointsToUse || 0,
+      const payload = {
+        pointsToUse: Number(orderData.pointsToUse) || 0,
         shippingAddress: {
-          street: orderData.shippingAddress.street,
-          city: orderData.shippingAddress.city,
-          state: orderData.shippingAddress.state,
-          postalCode: orderData.shippingAddress.zipCode,
-          country: orderData.shippingAddress.country
+          street: String(orderData.shippingAddress.street || '').trim(),
+          city: String(orderData.shippingAddress.city || '').trim(),
+          state: String(orderData.shippingAddress.state || '').trim(),
+          postalCode: String(orderData.shippingAddress.zipCode || '').trim(),
+          country: String(orderData.shippingAddress.country || '').trim()
         },
         paymentMethod: orderData.paymentMethod,
         paymentDetails: orderData.paymentDetails,
         notes: orderData.userDetails ? `Order for ${orderData.userDetails.fullName}` : 'Order placed'
-      });
+      };
+      
+      console.log('Payload being sent:', payload);
+      
+      const response = await api.post('/orders/checkout', payload);
       
       console.log('Order created successfully:', response.data);
       return response.data;

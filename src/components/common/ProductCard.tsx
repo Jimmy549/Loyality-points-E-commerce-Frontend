@@ -6,12 +6,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/types/product.types";
 
+import { getBackendProductId } from "@/lib/utils/productIdMapping";
+
 type ProductCardProps = {
   data: Product;
 };
 
 const ProductCard = ({ data }: ProductCardProps) => {
-  const productId = data._id || data.id;
+  // Use _id from backend, or map old numeric IDs
+  const productId = data._id || 
+    (typeof data.id === 'number' ? getBackendProductId(data.id) : data.id);
   
   return (
     <Link

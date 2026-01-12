@@ -42,6 +42,41 @@ export default function OrderDetailsPage() {
   const router = useRouter();
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+
+  const approvePayment = async () => {
+    if (!confirm('Approve this payment?')) return;
+    
+    setUpdating(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/orders/${params.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({
+            status: 'CONFIRMED',
+            paymentStatus: 'paid'
+          }),
+        }
+      );
+
+      if (response.ok) {
+        alert('Payment approved successfully!');
+        fetchOrderDetails();
+      } else {
+        alert('Failed to approve payment');
+      }
+    } catch (error) {
+      console.error('Failed to approve payment:', error);
+      alert('Error approving payment');
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   useEffect(() => {
     if (params.id) {
@@ -61,8 +96,11 @@ export default function OrderDetailsPage() {
       );
 
       if (response.ok) {
-        const data = await response.json();
-        setOrder(data);
+        const text = await response.text();
+        if (text) {
+          const data = JSON.parse(text);
+          setOrder(data);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch order details:", error);
@@ -111,6 +149,15 @@ export default function OrderDetailsPage() {
             <span className="badge badge-pending">Pending</span>
           </div>
           <div className="flex items-center gap-3">
+            {(order as any).paymentStatus === 'pending' && (
+              <button 
+                onClick={approvePayment}
+                disabled={updating}
+                className="btn-primary bg-green-600 hover:bg-green-700"
+              >
+                {updating ? 'Approving...' : '✓ Approve Payment'}
+              </button>
+            )}
             <button className="btn-secondary flex items-center gap-2">
               <Calendar size={16} />
               <span>

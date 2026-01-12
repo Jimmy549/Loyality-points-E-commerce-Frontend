@@ -150,7 +150,7 @@ export default function OrdersPage() {
                 </span>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                 <div>
                   <p className="text-sm font-medium text-gray-700">Total Amount</p>
                   <p className="text-lg font-semibold">${order.totalAmount}</p>
@@ -160,12 +160,27 @@ export default function OrdersPage() {
                   <p className="text-lg font-semibold">{order.items.length} item(s)</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Points Used</p>
-                  <p className="text-lg font-semibold text-red-600">-{order.loyaltyPointsUsed || order.pointsUsed || 0}</p>
+                  <p className="text-sm font-medium text-gray-700">Payment Method</p>
+                  <p className="text-sm font-semibold capitalize">
+                    {order.paymentMethod === 'stripe' ? '💳 Card' : 
+                     order.paymentMethod === 'points' ? '⭐ Points' :
+                     order.paymentMethod === 'hybrid' ? '🔄 Card + Points' : 'Card'}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Points Earned</p>
-                  <p className="text-lg font-semibold text-green-600">+{order.loyaltyPointsEarned || order.pointsEarned || 0}</p>
+                  <p className="text-sm font-medium text-gray-700">Payment Status</p>
+                  <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                    order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
+                    order.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {order.paymentStatus || 'pending'}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Points Used</p>
+                  <p className="text-lg font-semibold text-red-600">-{order.loyaltyPointsUsed || order.pointsUsed || 0}</p>
                 </div>
               </div>
               

@@ -159,6 +159,12 @@ export default function AdminOrders() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Amount
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Payment Method
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Payment Status
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -208,6 +214,23 @@ export default function AdminOrders() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm font-medium text-gray-900">
                       ₹{(order.totalAmount || 0).toFixed(2)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm text-gray-700 capitalize">
+                      {(order as any).paymentMethod === 'stripe' ? '💳 Card' : 
+                       (order as any).paymentMethod === 'points' ? '⭐ Points' :
+                       (order as any).paymentMethod === 'hybrid' ? 'Card + Points' : 'Card'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                      (order as any).paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
+                      (order as any).paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      (order as any).paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {(order as any).paymentStatus || 'pending'}
                     </span>
                   </td>
                 </tr>
