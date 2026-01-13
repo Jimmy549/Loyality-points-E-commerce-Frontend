@@ -65,6 +65,23 @@ export default function OrdersPage() {
     }
   };
 
+  const handleRefundOrder = async (orderId: string) => {
+    if (!confirm("Request refund for this order? This will cancel the order and refund your payment.")) return;
+    
+    setActionLoading(orderId);
+    try {
+      await ordersService.refundOrder(orderId);
+      setOrders(orders.map(order => 
+        order._id === orderId ? { ...order, status: 'cancelled' as const, paymentStatus: 'refunded' as const } : order
+      ));
+      alert('Refund processed successfully!');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Refund failed');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const handleViewOrder = (orderId: string) => {
     router.push(`/orders/${orderId}`);
   };
@@ -173,6 +190,7 @@ export default function OrdersPage() {
                     order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
                     order.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                     order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                    order.paymentStatus === 'refunded' ? 'bg-purple-100 text-purple-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
                     {order.paymentStatus || 'pending'}
@@ -183,6 +201,12 @@ export default function OrdersPage() {
                   <p className="text-lg font-semibold text-red-600">-{order.loyaltyPointsUsed || order.pointsUsed || 0}</p>
                 </div>
               </div>
+              
+              {order.stripePaymentIntentId && (
+                <div className="mb-4 p-2 bg-gray-50 rounded">
+                  <p className="text-xs text-gray-600">Transaction ID: <span className="font-mono">{order.stripePaymentIntentId}</span></p>
+                </div>
+              )}
               
               <div className="border-t pt-4 mb-4">
                 <h4 className="font-medium mb-2">Items ({order.items.length}):</h4>
@@ -247,7 +271,22 @@ export default function OrdersPage() {
                   </button>
                 )}
                 
-                {canCancelOrder(order.status) && (
+                {order.paymentStatus === 'paid' && ['confirmed', 'pending'].includes(order.status.toLowerCase()) && (
+                  <button
+                    onClick={() => handleRefundOrder(order._id)}
+                    disabled={actionLoading === order._id}
+                    className="flex items-center space-x-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {actionLoading === order._id ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      <span>💰</span>
+                    )}
+                    <span>Request Refund</span>
+                  </button>
+                )}
+                
+                {canCancelOrder(order.status) && order.paymentStatus !== 'paid' && (
                   <button
                     onClick={() => handleCancelOrder(order._id)}
                     disabled={actionLoading === order._id}

@@ -57,6 +57,7 @@ export interface Order {
   };
   paymentMethod: string;
   paymentStatus?: 'paid' | 'pending' | 'failed' | 'refunded';
+  stripePaymentIntentId?: string;
   createdAt: string;
   updatedAt: string;
   checkoutUrl?: string;
@@ -135,6 +136,16 @@ export const ordersService = {
       return response.data;
     } catch (error) {
       console.error('Cancel order failed:', error);
+      throw error;
+    }
+  },
+
+  async refundOrder(id: string, reason?: string): Promise<{ success: boolean; refundId: string }> {
+    try {
+      const response = await api.post(`/payments/refund/${id}`, { reason });
+      return response.data;
+    } catch (error) {
+      console.error('Refund order failed:', error);
       throw error;
     }
   }

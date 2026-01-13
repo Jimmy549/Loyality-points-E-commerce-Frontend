@@ -17,6 +17,9 @@ interface Order {
     | "SHIPPED"
     | "DELIVERED"
     | "CANCELLED";
+  paymentMethod?: string;
+  paymentStatus?: string;
+  stripePaymentIntentId?: string;
   createdAt: string;
 }
 
@@ -165,6 +168,9 @@ export default function AdminOrders() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Payment Status
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Transaction ID
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -228,10 +234,20 @@ export default function AdminOrders() {
                       (order as any).paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
                       (order as any).paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                       (order as any).paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                      (order as any).paymentStatus === 'refunded' ? 'bg-purple-100 text-purple-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {(order as any).paymentStatus || 'pending'}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {order.stripePaymentIntentId ? (
+                      <span className="text-xs font-mono text-gray-600">
+                        {order.stripePaymentIntentId.slice(0, 20)}...
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400">-</span>
+                    )}
                   </td>
                 </tr>
               ))}
