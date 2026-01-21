@@ -26,7 +26,13 @@ export interface CreateOrderRequest {
 
 export interface Order {
   _id: string;
-  user: string;
+  user: string | {
+    _id: string;
+    name: string;
+    email: string;
+    loyaltyPoints: number;
+    role: string;
+  };
   items: Array<{
     productId?: string;
     product?: {
@@ -47,7 +53,7 @@ export interface Order {
   loyaltyPointsUsed?: number;
   pointsEarned?: number;
   pointsUsed?: number;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   shippingAddress: {
     street: string;
     city: string;
@@ -58,6 +64,7 @@ export interface Order {
   paymentMethod: string;
   paymentStatus?: 'paid' | 'pending' | 'failed' | 'refunded';
   stripePaymentIntentId?: string;
+  stripeSessionId?: string;
   createdAt: string;
   updatedAt: string;
   checkoutUrl?: string;

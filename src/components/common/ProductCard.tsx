@@ -31,6 +31,7 @@ const ProductCard = ({ data }: ProductCardProps) => {
             className="rounded-md w-full h-full object-contain hover:scale-110 transition-all duration-500"
             alt={data.title}
             unoptimized
+            style={{ height: "auto" }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">

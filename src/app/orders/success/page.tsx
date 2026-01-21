@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/hooks/redux";
-import { refreshUserData } from "@/lib/features/auth/authSlice";
+import { refreshUserData, updateUser } from "@/lib/features/auth/authSlice";
 import { clearCart } from "@/lib/features/carts/cartsSlice";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -60,7 +60,11 @@ export default function OrderSuccessPage() {
         setOrderDetails(data.order);
         
         // Refresh user data to get updated loyalty points
-        await dispatch(refreshUserData());
+        if (data.user) {
+          dispatch(updateUser(data.user));
+        } else {
+          await dispatch(refreshUserData());
+        }
         
         // Clear cart
         await dispatch(clearCart());

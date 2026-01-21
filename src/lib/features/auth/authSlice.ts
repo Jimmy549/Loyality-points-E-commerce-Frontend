@@ -54,14 +54,12 @@ export const registerUser = createAsyncThunk(
 
 export const refreshUserData = createAsyncThunk(
   'auth/refreshUserData',
-  async (_, { rejectWithValue, getState }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const response = await authService.getProfile();
       return response;
     } catch (error: any) {
-      // Don't reject, just return current user data
-      const state = getState() as any;
-      return state.auth.user;
+      return rejectWithValue(error.message || 'Failed to refresh profile');
     }
   }
 );
@@ -189,8 +187,8 @@ const authSlice = createSlice({
       })
       // Refresh user data
       .addCase(refreshUserData.fulfilled, (state, action) => {
-        if (state.user && action.payload) {
-          state.user = { ...state.user, ...action.payload };
+        if (action.payload) {
+          state.user = action.payload; // Replace with fresh data from server
           authService.setUser(state.user as User);
         }
       });

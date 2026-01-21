@@ -34,6 +34,7 @@ const ProductCard = ({ data }: ProductCardProps) => {
           className="rounded-md w-full h-full object-cover hover:scale-110 transition-all duration-500"
           alt={data.name}
           priority
+          style={{ height: "auto" }}
         />
       </Link>
       <div className="flex w-full self-stretch flex-col">

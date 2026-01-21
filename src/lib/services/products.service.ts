@@ -32,6 +32,10 @@ export const productsService = {
     isOnSale?: boolean;
     loyaltyType?: string;
     search?: string;
+    tag?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: string;
   }): Promise<ProductsResponse> {
     try {
       const response = await apiClient.get('/products', { params });

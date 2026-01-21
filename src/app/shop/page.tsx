@@ -35,7 +35,10 @@ export default function ShopPage() {
       const response = await productsService.getProducts({
         page,
         limit: 9,
-        category: filters.category.length > 0 ? filters.category.join(',') : undefined
+        category: filters.category.length > 0 ? filters.category[0] : undefined,
+        minPrice: filters.priceMin,
+        maxPrice: filters.priceMax,
+        sortBy: sortBy === 'low-price' ? 'price' : sortBy === 'high-price' ? '-price' : undefined
       });
       setProducts(response.products || []);
       const totalCount = response.total || response.products?.length || 0;

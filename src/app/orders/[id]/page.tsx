@@ -1,6 +1,7 @@
 "use client";
 
-import { useAppSelector } from "@/lib/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/hooks/redux";
+import { refreshUserData, updateUser } from "@/lib/features/auth/authSlice";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ordersService, Order } from "@/lib/services/orders.service";
@@ -62,6 +63,7 @@ const getMockOrder = (id: string): Order => ({
 
 export default function OrderDetailsPage() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const params = useParams();
   const orderId = params.id as string;
@@ -78,11 +80,39 @@ export default function OrderDetailsPage() {
 
     const fetchOrder = async () => {
       try {
-        const data = await ordersService.getOrder(orderId);
+        let data = await ordersService.getOrder(orderId);
+        
+        // Auto-verify if the order is still pending but has a stripe session
+        if (data && (data.paymentStatus as string) === 'pending' && data.stripeSessionId && (data.status as string).toUpperCase() === 'PENDING') {
+          try {
+            const token = localStorage.getItem("token");
+            const verifyRes = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/payments/verify/${data.stripeSessionId}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            if (verifyRes.ok) {
+              const verifyData = await verifyRes.json();
+              if (verifyData.order) {
+                data = verifyData.order;
+                
+                // CRITICAL: Update user profile with fresh points
+                if (verifyData.user) {
+                  dispatch(updateUser(verifyData.user));
+                } else {
+                  dispatch(refreshUserData());
+                }
+              }
+            }
+          } catch (vErr) {
+            console.error("Auto-verification failed:", vErr);
+          }
+        }
+        
         setOrder(data);
       } catch (err: any) {
         console.log("API failed, using mock data");
-        // Use mock data if API fails
         setOrder(getMockOrder(orderId));
       } finally {
         setLoading(false);
@@ -204,7 +234,8 @@ export default function OrderDetailsPage() {
           {order.items.map((item, index) => {
             // Handle different item structures from backend
             const productName = item.title || item.product?.name || item.product?.title || 'Product';
-            const productPrice = item.product?.price || (item.price / item.quantity) || 0;
+            const productPrice = item.price || item.product?.price || 0;
+            const itemTotal = productPrice * item.quantity;
             
             return (
               <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg">
@@ -228,7 +259,7 @@ export default function OrderDetailsPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">${(item.price || 0).toFixed(2)}</p>
+                  <p className="font-semibold">${(itemTotal || 0).toFixed(2)}</p>
                   <p className="text-sm text-gray-600">${(productPrice || 0).toFixed(2)} each</p>
                 </div>
               </div>

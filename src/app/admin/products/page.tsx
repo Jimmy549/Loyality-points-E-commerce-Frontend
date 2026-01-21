@@ -38,7 +38,7 @@ export default function AdminProducts() {
       if (response.ok) {
         const data = await response.json();
         setProducts(data.products || []);
-        setTotalPages(data.totalPages || 10);
+        setTotalPages(data.pages || 1);
       } else {
         console.error("Failed to fetch products:", response.statusText);
       }

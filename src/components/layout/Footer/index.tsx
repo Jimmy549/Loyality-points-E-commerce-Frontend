@@ -119,6 +119,7 @@ const Footer = () => {
                     height={15}
                     alt="payment method"
                     className="max-h-[15px] max-w-[33px] object-contain"
+                    style={{ height: "auto" }}
                   />
                 </span>
               ))}

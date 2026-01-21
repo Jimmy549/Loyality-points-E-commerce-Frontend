@@ -35,9 +35,11 @@ export default function ProfilePage() {
           address: "123 Main St, New York, NY 10001",
           joinDate: "January 2024"
         });
+        // Refresh points on mount to ensure they are real-time
+        dispatch(refreshUserData());
       }
     }
-  }, [isAuthenticated, loading, router, user]);
+  }, [isAuthenticated, loading, router, user, dispatch]);
 
   const handleSaveProfile = () => {
     setIsEditing(false);

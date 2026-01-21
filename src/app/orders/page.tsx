@@ -1,15 +1,17 @@
 "use client";
 
-import { useAppSelector } from "@/lib/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/hooks/redux";
+import { refreshUserData } from "@/lib/features/auth/authSlice";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ordersService, Order } from "@/lib/services/orders.service";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorToast from "@/components/ui/ErrorToast";
-import { Eye, X, Package, Truck } from "lucide-react";
+import { Eye, X, Package, Truck, RefreshCw } from "lucide-react";
 
 export default function OrdersPage() {
   const { isAuthenticated, initialized } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,51 @@ export default function OrdersPage() {
     const fetchOrders = async () => {
       try {
         const data = await ordersService.getOrders();
-        setOrders(data.orders);
+        let fetchedOrders = data.orders;
+        
+        // Auto-verify any pending orders that have stripe sessions
+        const pendingStripeOrders = fetchedOrders.filter(
+          o => (o.paymentStatus as string) === 'pending' && 
+               o.stripeSessionId && 
+               (o.status as string).toUpperCase() === 'PENDING'
+        );
+
+        if (pendingStripeOrders.length > 0) {
+          console.log(`Found ${pendingStripeOrders.length} pending Stripe orders. Syncing...`);
+          const token = localStorage.getItem("token");
+          
+          let anyConfirmed = false;
+          const updatedOrders = [...fetchedOrders];
+
+          for (const order of pendingStripeOrders) {
+            try {
+              const verifyRes = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/payments/verify/${order.stripeSessionId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+              
+              if (verifyRes.ok) {
+                const verifyData = await verifyRes.json();
+                if (verifyData.order) {
+                  const idx = updatedOrders.findIndex(o => o._id === order._id);
+                  if (idx !== -1) {
+                    updatedOrders[idx] = verifyData.order;
+                    anyConfirmed = true;
+                  }
+                }
+              }
+            } catch (vErr) {
+              console.error(`Sync failed for order ${order._id}:`, vErr);
+            }
+          }
+          
+          fetchedOrders = updatedOrders;
+          if (anyConfirmed) {
+            dispatch(refreshUserData());
+          }
+        }
+
+        setOrders(fetchedOrders);
       } catch (err: any) {
         console.log("API failed, using localStorage data");
         // Fallback to localStorage
@@ -44,7 +90,7 @@ export default function OrdersPage() {
     };
 
     fetchOrders();
-  }, [initialized, isAuthenticated, router]);
+  }, [initialized, isAuthenticated, router, dispatch]);
 
   const handleCancelOrder = async (orderId: string) => {
     if (!confirm("Are you sure you want to cancel this order?")) return;
@@ -80,6 +126,45 @@ export default function OrdersPage() {
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const handleSyncAllPayments = async () => {
+    const pendingOrders = orders.filter(
+      o => (o.paymentStatus as string) === 'pending' && 
+           o.stripeSessionId && 
+           (o.status as string).toUpperCase() === 'PENDING'
+    );
+
+    if (pendingOrders.length === 0) {
+      alert("No pending Stripe orders found to sync.");
+      return;
+    }
+
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    let confirmedCount = 0;
+
+    for (const order of pendingOrders) {
+      try {
+        const verifyRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/payments/verify/${order.stripeSessionId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (verifyRes.ok) confirmedCount++;
+      } catch (err) {
+        console.error("Sync failed for", order._id);
+      }
+    }
+
+    if (confirmedCount > 0) {
+      dispatch(refreshUserData());
+      const data = await ordersService.getOrders();
+      setOrders(data.orders);
+      alert(`Successfully synced ${confirmedCount} orders!`);
+    } else {
+      alert("Could not find any updated payments on Stripe.");
+    }
+    setLoading(false);
   };
 
   const handleViewOrder = (orderId: string) => {
@@ -128,15 +213,26 @@ export default function OrdersPage() {
         onClose={() => setError("")} 
       />
       
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 gap-4 flex-wrap">
         <h1 className="text-3xl font-bold">My Orders</h1>
-        <button
-          onClick={() => router.push("/shop")}
-          className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors flex items-center space-x-2"
-        >
-          <Package className="w-4 h-4" />
-          <span>Continue Shopping</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={handleSyncAllPayments}
+            disabled={loading}
+            title="Sync Payment Status with Stripe"
+            className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center space-x-2 text-sm text-gray-600 disabled:opacity-50"
+          >
+            {loading ? <LoadingSpinner size="sm" /> : <RefreshCw className="w-4 h-4" />}
+            <span className="hidden sm:inline">Sync Status</span>
+          </button>
+          <button
+            onClick={() => router.push("/shop")}
+            className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors flex items-center space-x-2"
+          >
+            <Package className="w-4 h-4" />
+            <span>Continue Shopping</span>
+          </button>
+        </div>
       </div>
       
       {orders.length === 0 ? (

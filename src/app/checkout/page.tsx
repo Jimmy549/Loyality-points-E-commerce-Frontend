@@ -98,11 +98,14 @@ export default function CheckoutPage() {
 
   const validateFieldRealtime = (field: string, value: string, type: 'shipping' | 'payment') => {
     let error = '';
-    if (type === 'shipping') {
-      if (!value.trim()) error = `${field} is required`;
-    } else {
-      if (!value.trim()) error = `${field} is required`;
+    if (!value.trim()) {
+      error = `${field} is required`;
     }
+    
+    setErrors(prev => ({
+      ...prev,
+      [type]: { ...prev[type], [field]: error }
+    }));
     return error;
   };
 
@@ -142,19 +145,33 @@ export default function CheckoutPage() {
           postalCode: String(shippingAddress.zipCode || '').trim(),
           country: String(shippingAddress.country || '').trim()
         },
-        paymentMethod: 'stripe',
+        // Omit paymentMethod to let backend decide based on points used
       };
       
       console.log('Order Data Being Sent:', orderData);
 
       // Create order and get Stripe checkout URL
       const orderResult = await ordersService.createOrder(orderData);
+      console.log('Order created successfully:', orderResult);
+      
+      // Update user state immediately with deducted points from backend response
+      if (orderResult.user && typeof orderResult.user === 'object') {
+        dispatch(updateUser(orderResult.user as any));
+      } else {
+        // Fallback to manual refresh if user object missing or just a string ID
+        await dispatch(refreshUserData());
+      }
 
-      // Redirect to Stripe Checkout
+      // Redirect to Stripe Checkout if needed, otherwise show success
       if (orderResult.checkoutUrl) {
         window.location.href = orderResult.checkoutUrl;
       } else {
-        throw new Error('No checkout URL received');
+        // Points-only payment success
+        setOrderId(orderResult._id);
+        setShowSuccess(true);
+        dispatch(clearCart());
+        localStorage.removeItem('checkoutData');
+        setLoading(false);
       }
 
     } catch (error: any) {
@@ -208,8 +225,12 @@ export default function CheckoutPage() {
                   <input 
                     type="text" 
                     value={shippingAddress.fullName} 
-                    onChange={(e) => setShippingAddress({...shippingAddress, fullName: e.target.value})}
-                    className="w-full px-3 py-2 border rounded-md"
+                    onChange={(e) => {
+                      setShippingAddress({...shippingAddress, fullName: e.target.value});
+                      validateFieldRealtime('fullName', e.target.value, 'shipping');
+                    }}
+                    onBlur={(e) => validateFieldRealtime('fullName', e.target.value, 'shipping')}
+                    className={cn("w-full px-3 py-2 border rounded-md", errors.shipping.fullName && "border-red-500")}
                     placeholder="John Doe"
                   />
                   {errors.shipping.fullName && <p className="text-red-500 text-xs mt-1">{errors.shipping.fullName}</p>}
@@ -219,8 +240,12 @@ export default function CheckoutPage() {
                   <input 
                     type="email" 
                     value={shippingAddress.email} 
-                    onChange={(e) => setShippingAddress({...shippingAddress, email: e.target.value})}
-                    className="w-full px-3 py-2 border rounded-md"
+                    onChange={(e) => {
+                      setShippingAddress({...shippingAddress, email: e.target.value});
+                      validateFieldRealtime('email', e.target.value, 'shipping');
+                    }}
+                    onBlur={(e) => validateFieldRealtime('email', e.target.value, 'shipping')}
+                    className={cn("w-full px-3 py-2 border rounded-md", errors.shipping.email && "border-red-500")}
                     placeholder="john@example.com"
                   />
                   {errors.shipping.email && <p className="text-red-500 text-xs mt-1">{errors.shipping.email}</p>}
@@ -231,8 +256,12 @@ export default function CheckoutPage() {
                 <input 
                   type="tel" 
                   value={shippingAddress.phone} 
-                  onChange={(e) => setShippingAddress({...shippingAddress, phone: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-md"
+                  onChange={(e) => {
+                    setShippingAddress({...shippingAddress, phone: e.target.value});
+                    validateFieldRealtime('phone', e.target.value, 'shipping');
+                  }}
+                  onBlur={(e) => validateFieldRealtime('phone', e.target.value, 'shipping')}
+                  className={cn("w-full px-3 py-2 border rounded-md", errors.shipping.phone && "border-red-500")}
                   placeholder="+1 234 567 8900"
                 />
                 {errors.shipping.phone && <p className="text-red-500 text-xs mt-1">{errors.shipping.phone}</p>}
@@ -242,8 +271,12 @@ export default function CheckoutPage() {
                 <input 
                   type="text" 
                   value={shippingAddress.street} 
-                  onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-md"
+                  onChange={(e) => {
+                    setShippingAddress({...shippingAddress, street: e.target.value});
+                    validateFieldRealtime('street', e.target.value, 'shipping');
+                  }}
+                  onBlur={(e) => validateFieldRealtime('street', e.target.value, 'shipping')}
+                  className={cn("w-full px-3 py-2 border rounded-md", errors.shipping.street && "border-red-500")}
                   placeholder="123 Main Street"
                 />
                 {errors.shipping.street && <p className="text-red-500 text-xs mt-1">{errors.shipping.street}</p>}
@@ -254,8 +287,12 @@ export default function CheckoutPage() {
                   <input 
                     type="text" 
                     value={shippingAddress.city} 
-                    onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})}
-                    className="w-full px-3 py-2 border rounded-md"
+                    onChange={(e) => {
+                      setShippingAddress({...shippingAddress, city: e.target.value});
+                      validateFieldRealtime('city', e.target.value, 'shipping');
+                    }}
+                    onBlur={(e) => validateFieldRealtime('city', e.target.value, 'shipping')}
+                    className={cn("w-full px-3 py-2 border rounded-md", errors.shipping.city && "border-red-500")}
                     placeholder="New York"
                   />
                   {errors.shipping.city && <p className="text-red-500 text-xs mt-1">{errors.shipping.city}</p>}
@@ -265,8 +302,12 @@ export default function CheckoutPage() {
                   <input 
                     type="text" 
                     value={shippingAddress.state} 
-                    onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
-                    className="w-full px-3 py-2 border rounded-md"
+                    onChange={(e) => {
+                      setShippingAddress({...shippingAddress, state: e.target.value});
+                      validateFieldRealtime('state', e.target.value, 'shipping');
+                    }}
+                    onBlur={(e) => validateFieldRealtime('state', e.target.value, 'shipping')}
+                    className={cn("w-full px-3 py-2 border rounded-md", errors.shipping.state && "border-red-500")}
                     placeholder="NY"
                   />
                   {errors.shipping.state && <p className="text-red-500 text-xs mt-1">{errors.shipping.state}</p>}
@@ -278,8 +319,12 @@ export default function CheckoutPage() {
                   <input 
                     type="text" 
                     value={shippingAddress.zipCode} 
-                    onChange={(e) => setShippingAddress({...shippingAddress, zipCode: e.target.value})}
-                    className="w-full px-3 py-2 border rounded-md"
+                    onChange={(e) => {
+                      setShippingAddress({...shippingAddress, zipCode: e.target.value});
+                      validateFieldRealtime('zipCode', e.target.value, 'shipping');
+                    }}
+                    onBlur={(e) => validateFieldRealtime('zipCode', e.target.value, 'shipping')}
+                    className={cn("w-full px-3 py-2 border rounded-md", errors.shipping.zipCode && "border-red-500")}
                     placeholder="12345"
                   />
                   {errors.shipping.zipCode && <p className="text-red-500 text-xs mt-1">{errors.shipping.zipCode}</p>}
@@ -289,8 +334,12 @@ export default function CheckoutPage() {
                   <input 
                     type="text" 
                     value={shippingAddress.country} 
-                    onChange={(e) => setShippingAddress({...shippingAddress, country: e.target.value})}
-                    className="w-full px-3 py-2 border rounded-md"
+                    onChange={(e) => {
+                      setShippingAddress({...shippingAddress, country: e.target.value});
+                      validateFieldRealtime('country', e.target.value, 'shipping');
+                    }}
+                    onBlur={(e) => validateFieldRealtime('country', e.target.value, 'shipping')}
+                    className={cn("w-full px-3 py-2 border rounded-md", errors.shipping.country && "border-red-500")}
                     placeholder="USA"
                   />
                   {errors.shipping.country && <p className="text-red-500 text-xs mt-1">{errors.shipping.country}</p>}

@@ -25,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={satoshi.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={satoshi.className} suppressHydrationWarning>
         <HolyLoader color="#868686" height="3px" speed={250} />
         <Providers>
           <ConditionalLayout>{children}</ConditionalLayout>

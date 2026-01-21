@@ -1,12 +1,14 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import ProductListSec from "@/components/common/ProductListSec";
 import Brands from "@/components/homepage/Brands";
 import DressStyle from "@/components/homepage/DressStyle";
 import Header from "@/components/homepage/Header";
 import Reviews from "@/components/homepage/Reviews";
 import { Review } from "@/types/review.types";
-import { newArrivalsData, topSellingData } from "@/data/products";
-
-export { newArrivalsData, topSellingData, relatedProductData } from "@/data/products";
+import { productsService } from "@/lib/services/products.service";
+import { Product } from "@/types/product.types";
 
 export const reviewsData: Review[] = [
   {
@@ -55,26 +57,67 @@ export const reviewsData: Review[] = [
 ];
 
 export default function Home() {
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [topSelling, setTopSelling] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHomeProducts = async () => {
+      try {
+        setLoading(true);
+        // Fetch new arrivals by tag and latest createdAt
+        const arrivalsRes = await productsService.getProducts({ 
+          limit: 4, 
+          tag: 'new-arrival',
+          sortBy: '-createdAt' 
+        });
+        
+        // Fetch top selling by tag
+        const topRes = await productsService.getProducts({ 
+          limit: 4, 
+          tag: 'top-selling' 
+        });
+
+        setNewArrivals(arrivalsRes.products as any[] || []);
+        setTopSelling(topRes.products as any[] || []);
+      } catch (error) {
+        console.error("Failed to fetch home products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHomeProducts();
+  }, []);
+
   return (
     <>
       <Header />
       <Brands />
       <main className="my-[50px] sm:my-[72px]">
-        <ProductListSec
-          title="NEW ARRIVALS"
-          data={newArrivalsData}
-          viewAllLink="/shop#new-arrivals"
-        />
-        <div className="max-w-frame mx-auto px-4 xl:px-0">
-          <hr className="h-[1px] border-t-black/10 my-10 sm:my-16" />
-        </div>
-        <div className="mb-[50px] sm:mb-20">
-          <ProductListSec
-            title="top selling"
-            data={topSellingData}
-            viewAllLink="/shop#top-selling"
-          />
-        </div>
+        {loading ? (
+          <div className="max-w-frame mx-auto px-4 text-center py-10 text-gray-400">
+            Loading products...
+          </div>
+        ) : (
+          <>
+            <ProductListSec
+              title="NEW ARRIVALS"
+              data={newArrivals}
+              viewAllLink="/shop"
+            />
+            <div className="max-w-frame mx-auto px-4 xl:px-0">
+              <hr className="h-[1px] border-t-black/10 my-10 sm:my-16" />
+            </div>
+            <div className="mb-[50px] sm:mb-20">
+              <ProductListSec
+                title="top selling"
+                data={topSelling}
+                viewAllLink="/shop"
+              />
+            </div>
+          </>
+        )}
         <div className="mb-[50px] sm:mb-20">
           <DressStyle />
         </div>
